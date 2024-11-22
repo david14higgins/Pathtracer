@@ -41,6 +41,9 @@ private:
     float exposure;
     float aperture;
     float focalDistance;
+
+    // Helper method for generating random points on the lens
+    Vector3 sampleLensPoint() const;
 };
 
 #endif // CAMERA_H

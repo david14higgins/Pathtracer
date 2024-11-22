@@ -55,26 +55,70 @@ Ray Camera::generateRay(int x, int y) const {
     return generateRay(static_cast<float>(x) + 0.5f, static_cast<float>(y) + 0.5f);
 }
 
+// Ray Camera::generateRay(float x, float y) const {
+//     // Compute normalized device coordinates for the pixel (x, y)
+//     float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+//     float fovScale = std::tan(fov * 0.5f * M_PI / 180.0f);
+
+//     // Calculate the pixel's position in NDC space (-1 to 1 range)
+//     // Note: Removed the +0.5f offset since it's now handled by the caller
+//     float px = -(2.0f * x / width - 1.0f) * aspectRatio * fovScale;
+//     float py = (1.0f - 2.0f * y / height) * fovScale;
+
+//     // Generate the direction of the ray
+//     Vector3 forward = (Vector3::fromArray(lookAt) - Vector3::fromArray(position)).normalize();
+//     Vector3 right = forward.cross(Vector3::fromArray(upVector)).normalize();
+//     Vector3 up = right.cross(forward).normalize();
+
+//     // Calculate the ray direction
+//     Vector3 rayDirection = forward + right * px + up * py;
+//     rayDirection = rayDirection.normalize();
+
+//     return Ray(Vector3::fromArray(position), rayDirection);
+// }
+
 Ray Camera::generateRay(float x, float y) const {
-    // Compute normalized device coordinates for the pixel (x, y)
     float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
     float fovScale = std::tan(fov * 0.5f * M_PI / 180.0f);
-
-    // Calculate the pixel's position in NDC space (-1 to 1 range)
-    // Note: Removed the +0.5f offset since it's now handled by the caller
+    
     float px = -(2.0f * x / width - 1.0f) * aspectRatio * fovScale;
     float py = (1.0f - 2.0f * y / height) * fovScale;
 
-    // Generate the direction of the ray
+    if (type == CameraType::PINHOLE) {
+        Vector3 origin = Vector3::fromArray(position);
+        Vector3 forward = (Vector3::fromArray(lookAt) - origin).normalize();
+        Vector3 right = forward.cross(Vector3::fromArray(upVector)).normalize();
+        Vector3 up = right.cross(forward).normalize();
+        
+        Vector3 direction = (forward + right * px + up * py).normalize();
+        return Ray(origin, direction);
+    } else {  // THIN_LENS camera
+        // Calculate point on focal plane
+        Vector3 forward = (Vector3::fromArray(lookAt) - Vector3::fromArray(position)).normalize();
+        Vector3 right = forward.cross(Vector3::fromArray(upVector)).normalize();
+        Vector3 up = right.cross(forward).normalize();
+        
+        Vector3 focalPoint = Vector3::fromArray(position) + 
+                           (forward + right * px + up * py).normalize() * focalDistance;
+        
+        // Generate random point on lens
+        Vector3 lensPoint = sampleLensPoint();
+        
+        // Create ray from lens point to focal point
+        return Ray(lensPoint, (focalPoint - lensPoint).normalize());
+    }
+}
+
+Vector3 Camera::sampleLensPoint() const {
+    // Generate random point on circular lens
+    float r = std::sqrt(static_cast<float>(rand()) / RAND_MAX) * aperture;
+    float theta = 2.0f * M_PI * static_cast<float>(rand()) / RAND_MAX;
+    
     Vector3 forward = (Vector3::fromArray(lookAt) - Vector3::fromArray(position)).normalize();
     Vector3 right = forward.cross(Vector3::fromArray(upVector)).normalize();
     Vector3 up = right.cross(forward).normalize();
-
-    // Calculate the ray direction
-    Vector3 rayDirection = forward + right * px + up * py;
-    rayDirection = rayDirection.normalize();
-
-    return Ray(Vector3::fromArray(position), rayDirection);
+    
+    return Vector3::fromArray(position) + (right * std::cos(theta) + up * std::sin(theta)) * r;
 }
 
 std::string Camera::toString() const {

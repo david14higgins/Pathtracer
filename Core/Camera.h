@@ -7,12 +7,12 @@
 
 class Camera {
 public:
-    enum class CameraType { PINHOLE };
+    enum class CameraType { PINHOLE, THIN_LENS };
 
     // Constructor with JSON parameters
     Camera(CameraType type, int width, int height, 
            std::array<float, 3> position, std::array<float, 3> lookAt, 
-           std::array<float, 3> upVector, float fov, float exposure);
+           std::array<float, 3> upVector, float fov, float exposure, float aperture, float focalDistance);
 
     // Accessors
     const std::array<float, 3>& getPosition() const;
@@ -22,6 +22,8 @@ public:
     float getExposure() const;
     int getWidth() const;
     int getHeight() const;
+    float getAperture() const;
+    float getFocalDistance() const;
 
     // Method to return camera details as a string
     std::string toString() const;
@@ -37,6 +39,8 @@ private:
     std::array<float, 3> upVector;
     float fov;
     float exposure;
+    float aperture;
+    float focalDistance;
 };
 
 #endif // CAMERA_H

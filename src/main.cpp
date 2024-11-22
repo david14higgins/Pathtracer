@@ -44,6 +44,8 @@ int main(int argc, char* argv[]) {
         
         std::cout << "Render time: " << duration.count() << " milliseconds" << std::endl;
 
+        std::cout << renderer.getCamera().toString() << std::endl;
+
         return 0;
     } catch (const std::exception& e) {
         std::cerr << "Error in main: " << e.what() << std::endl;

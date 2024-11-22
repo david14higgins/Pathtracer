@@ -88,6 +88,20 @@ Material IO::parseMaterial(const json& materialData) {
 
 Camera IO::parseCamera(const json& cameraData) {
     Camera::CameraType type = Camera::CameraType::PINHOLE;
+    if (cameraData["type"] == "thinlens") {
+        type = Camera::CameraType::THIN_LENS;
+    }
+    
+    float aperture = 0.0f;
+    float focalDistance = 0.0f;
+    
+    if (cameraData.contains("aperture")) {
+        aperture = cameraData["aperture"];
+    }
+    if (cameraData.contains("focalDistance")) {
+        focalDistance = cameraData["focalDistance"];
+    }
+
     return Camera(
         type,
         cameraData["width"],
@@ -96,7 +110,9 @@ Camera IO::parseCamera(const json& cameraData) {
         {cameraData["lookAt"][0], cameraData["lookAt"][1], cameraData["lookAt"][2]},
         {cameraData["upVector"][0], cameraData["upVector"][1], cameraData["upVector"][2]},
         cameraData["fov"],
-        cameraData["exposure"]
+        cameraData["exposure"],
+        aperture,
+        focalDistance
     );
 }
 

@@ -7,10 +7,10 @@
 
 Camera::Camera(CameraType type, int width, int height, 
                std::array<float, 3> position, std::array<float, 3> lookAt, 
-               std::array<float, 3> upVector, float fov, float exposure)
+               std::array<float, 3> upVector, float fov, float exposure, float aperture, float focalDistance)
     : type(type), width(width), height(height), 
       position(position), lookAt(lookAt), upVector(upVector), 
-      fov(fov), exposure(exposure) 
+      fov(fov), exposure(exposure), aperture(aperture), focalDistance(focalDistance) 
 {}
 
 const std::array<float, 3>& Camera::getPosition() const {
@@ -39,6 +39,14 @@ int Camera::getWidth() const {
 
 int Camera::getHeight() const {
     return height;
+}
+
+float Camera::getAperture() const {
+    return aperture;
+}
+
+float Camera::getFocalDistance() const {
+    return focalDistance;
 }
 
 // Generate ray given pixels
@@ -76,6 +84,8 @@ std::string Camera::toString() const {
         << "Look At: [" << lookAt[0] << ", " << lookAt[1] << ", " << lookAt[2] << "]\n"
         << "Up Vector: [" << upVector[0] << ", " << upVector[1] << ", " << upVector[2] << "]\n"
         << "FOV: " << fov << " degrees\n"
-        << "Exposure: " << exposure;
+        << "Exposure: " << exposure << "\n"
+        << "Aperture: " << aperture << "\n"
+        << "Focal Distance: " << focalDistance;
     return oss.str();
 }

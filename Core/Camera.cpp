@@ -79,7 +79,8 @@ Ray Camera::generateRay(float x, float y) const {
 
 std::string Camera::toString() const {
     std::ostringstream oss;
-    oss << "Resolution: " << width << "x" << height << "\n"
+    oss << "Camera Type: " << (type == CameraType::PINHOLE ? "Pinhole" : "Thin Lens") << "\n"
+        << "Resolution: " << width << "x" << height << "\n"
         << "Position: [" << position[0] << ", " << position[1] << ", " << position[2] << "]\n"
         << "Look At: [" << lookAt[0] << ", " << lookAt[1] << ", " << lookAt[2] << "]\n"
         << "Up Vector: [" << upVector[0] << ", " << upVector[1] << ", " << upVector[2] << "]\n"

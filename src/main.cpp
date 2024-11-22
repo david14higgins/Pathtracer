@@ -26,12 +26,14 @@ int main(int argc, char* argv[]) {
         }
         std::cout << (useBVH ? "BVH acceleration enabled" : "BVH acceleration disabled") << std::endl;
 
-        Renderer renderer = IO::loadRenderer(filename, useBVH);
+        bool useAntiAliasing = true;
+        int samplesPerPixel = 16;
+
+        Renderer renderer = IO::loadRenderer(filename, useBVH, useAntiAliasing, samplesPerPixel);
+        auto start = std::chrono::high_resolution_clock::now();
         std::vector<std::vector<Color>> renderedScene = renderer.renderScene();
         IO::writePPM(renderedScene);
         
-        auto start = std::chrono::high_resolution_clock::now();
-        renderer.renderScene();
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         

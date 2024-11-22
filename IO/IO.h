@@ -12,7 +12,7 @@ using json = nlohmann::json;
 
 class IO {
 public:
-    static Renderer loadRenderer(const std::string& filename, bool useBVH);
+    static Renderer loadRenderer(const std::string& filename, bool useBVH, bool useAntiAliasing = false, int samplesPerPixel = 4);
     static void writePPM(const std::vector<std::vector<Color>>& pixelColors);
 
 private:

@@ -18,8 +18,8 @@
 
 
 // Constructor that takes a Scene object
-Renderer::Renderer(int nbounces, RenderMode rendermode, const Camera& camera, const Scene& scene, bool useBVH)
-    : nbounces(nbounces), rendermode(rendermode), camera(camera), scene(scene), useBVH(useBVH) {}
+Renderer::Renderer(int nbounces, RenderMode rendermode, const Camera& camera, const Scene& scene, bool useBVH, bool useAntiAliasing, int samplesPerPixel)
+    : nbounces(nbounces), rendermode(rendermode), camera(camera), scene(scene), useBVH(useBVH), useAntiAliasing(useAntiAliasing), samplesPerPixel(samplesPerPixel) {}
 
 // Accessor methods
 int Renderer::getNbounces() const {
@@ -45,14 +45,54 @@ std::vector<std::vector<Color>> Renderer::renderScene() {
     // Get dimensions from camera
     int width = camera.getWidth();
     int height = camera.getHeight();
+    int totalPixels = width * height;
+    int pixelsCompleted = 0;
+    int lastPercentage = -10;
 
     // Create the pixel color buffer
     std::vector<std::vector<Color>> pixelColors(height, std::vector<Color>(width));
-    // Render pixels   
+
+
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
+            if (!useAntiAliasing) {
             Ray ray = camera.generateRay(x, y);
             pixelColors[y][x] = renderPixel(ray, 0);
+            } else {
+                // Accumulate color from multiple samples
+                float r = 0, g = 0, b = 0;
+                
+                for (int sy = 0; sy < samplesPerPixel; ++sy) {
+                    for (int sx = 0; sx < samplesPerPixel; ++sx) {
+                        // Calculate subpixel offsets
+                        float dx = (sx + static_cast<float>(rand()) / RAND_MAX) / samplesPerPixel;  // Add randomness
+                        float dy = (sy + static_cast<float>(rand()) / RAND_MAX) / samplesPerPixel;  // Add randomness
+                        
+                        Ray ray = camera.generateRay(x + dx, y + dy);
+                        Color sample = renderPixel(ray, 0);
+                        
+                        r += sample.getRed();
+                        g += sample.getGreen();
+                        b += sample.getBlue();
+                    }
+                }
+                
+                // Average the samples
+                float scale = 1.0f / (samplesPerPixel * samplesPerPixel);
+                pixelColors[y][x] = Color(
+                    static_cast<unsigned char>(std::min(r * scale, 255.0f)),  // Add clamping
+                    static_cast<unsigned char>(std::min(g * scale, 255.0f)),  // Add clamping
+                    static_cast<unsigned char>(std::min(b * scale, 255.0f))   // Add clamping
+                );
+            }
+            // Update progress every 10% // Update progress every 10%
+            pixelsCompleted++;
+            int currentPercentage = (pixelsCompleted * 100) / totalPixels;
+            // Only print at 10% intervals
+            if (currentPercentage >= lastPercentage + 10) {
+                std::cout << "Rendering: " << currentPercentage << "% complete" << std::endl;
+                lastPercentage = currentPercentage;
+            }
         }            
     }    
     

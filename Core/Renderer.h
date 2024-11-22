@@ -13,7 +13,7 @@ public:
     enum class RenderMode { BINARY, PHONG};
 
     // Constructor that takes a Scene object
-    Renderer(int nbounces, RenderMode rendermode, const Camera& camera, const Scene& scene, bool useBVH);
+    Renderer(int nbounces, RenderMode rendermode, const Camera& camera, const Scene& scene, bool useBVH, bool useAntiAliasing = false, int samplesPerPixel = 4);
 
     // Accessors
     int getNbounces() const;
@@ -39,6 +39,8 @@ private:
     Camera camera;
     Scene scene;  // Scene object containing all scene data
     bool useBVH;
+    bool useAntiAliasing; 
+    int samplesPerPixel; 
 };
 
 #endif // RENDERER_H

@@ -6,7 +6,7 @@
 #include "../Geometry/Triangle.h"
 #include "../Lighting/PointLight.h"
 
-Renderer IO::loadRenderer(const std::string& filename, bool useBVH) {
+Renderer IO::loadRenderer(const std::string& filename, bool useBVH, bool useAntiAliasing, int samplesPerPixel) {
     std::string filepath = "assets/" + filename;
     json j = parseJSONFile(filepath);
 
@@ -39,7 +39,7 @@ Renderer IO::loadRenderer(const std::string& filename, bool useBVH) {
         Scene scene = loadSceneFromJSON(j["scene"]);
 
         // Create and return renderer
-        return Renderer(nbounces, rendermode, camera, scene, useBVH);
+        return Renderer(nbounces, rendermode, camera, scene, useBVH, useAntiAliasing, samplesPerPixel);
     }
     catch (const std::exception& e) {
         throw std::runtime_error("Error in loadRendererDetails: " + std::string(e.what()));

@@ -28,7 +28,7 @@ public:
 
     // Method to generate a ray for a given pixel (x, y)
     Ray generateRay(int x, int y) const;  // Declaration of the generateRay method
-
+    Ray generateRay(float x, float y) const;
 private:
     CameraType type;
     int width, height;

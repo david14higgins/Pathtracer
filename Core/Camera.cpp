@@ -55,28 +55,6 @@ Ray Camera::generateRay(int x, int y) const {
     return generateRay(static_cast<float>(x) + 0.5f, static_cast<float>(y) + 0.5f);
 }
 
-// Ray Camera::generateRay(float x, float y) const {
-//     // Compute normalized device coordinates for the pixel (x, y)
-//     float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-//     float fovScale = std::tan(fov * 0.5f * M_PI / 180.0f);
-
-//     // Calculate the pixel's position in NDC space (-1 to 1 range)
-//     // Note: Removed the +0.5f offset since it's now handled by the caller
-//     float px = -(2.0f * x / width - 1.0f) * aspectRatio * fovScale;
-//     float py = (1.0f - 2.0f * y / height) * fovScale;
-
-//     // Generate the direction of the ray
-//     Vector3 forward = (Vector3::fromArray(lookAt) - Vector3::fromArray(position)).normalize();
-//     Vector3 right = forward.cross(Vector3::fromArray(upVector)).normalize();
-//     Vector3 up = right.cross(forward).normalize();
-
-//     // Calculate the ray direction
-//     Vector3 rayDirection = forward + right * px + up * py;
-//     rayDirection = rayDirection.normalize();
-
-//     return Ray(Vector3::fromArray(position), rayDirection);
-// }
-
 Ray Camera::generateRay(float x, float y) const {
     float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
     float fovScale = std::tan(fov * 0.5f * M_PI / 180.0f);

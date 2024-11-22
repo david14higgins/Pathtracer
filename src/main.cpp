@@ -33,7 +33,6 @@ int main(int argc, char* argv[]) {
         std::cout << (useBVH ? "BVH acceleration enabled" : "BVH acceleration disabled") << std::endl;
         std::cout << (useAntiAliasing ? "Anti-aliasing enabled" : "Anti-aliasing disabled") << std::endl;
         
-
         Renderer renderer = IO::loadRenderer(filename, useBVH, useAntiAliasing, samplesPerPixel);
         auto start = std::chrono::high_resolution_clock::now();
         std::vector<std::vector<Color>> renderedScene = renderer.renderScene();
@@ -43,9 +42,6 @@ int main(int argc, char* argv[]) {
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         
         std::cout << "Render time: " << duration.count() << " milliseconds" << std::endl;
-
-        std::cout << renderer.getCamera().toString() << std::endl;
-
         return 0;
     } catch (const std::exception& e) {
         std::cerr << "Error in main: " << e.what() << std::endl;

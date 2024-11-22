@@ -135,25 +135,106 @@ std::string Renderer::toString() const {
         return "Error generating renderer string: " + std::string(e.what());
     }
 }
-Color Renderer::toneMap(const Color& hdrColor) const{
-    float r = hdrColor.getRed() / 255.0f;
-    float g = hdrColor.getGreen() / 255.0f;
-    float b = hdrColor.getBlue() / 255.0f;
+// Color Renderer::toneMap(const Color& hdrColor) const{
+//     float r = hdrColor.getRed() / 255.0f;
+//     float g = hdrColor.getGreen() / 255.0f;
+//     float b = hdrColor.getBlue() / 255.0f;
 
-    // Calculate luminance
+//     // Calculate luminance
+//     float luminance = 0.2126f * r + 0.7152f * g + 0.0722f * b;
+
+//     // Apply tone mapping
+//     float toneMappedLuminance = luminance / (1 + luminance);
+//     float scale = toneMappedLuminance / (luminance > 0.0f ? luminance : 1.0f);
+    
+//     // Apply scale and clamp
+//     r = std::clamp(r * scale * 255.0f, 0.0f, 255.0f);
+//     g = std::clamp(g * scale * 255.0f, 0.0f, 255.0f);
+//     b = std::clamp(b * scale * 255.0f, 0.0f, 255.0f);
+
+//     return Color(static_cast<unsigned char>(r), static_cast<unsigned char>(g), static_cast<unsigned char>(b));
+// }
+
+Color Renderer::toneMap(const Color& hdrColor) const {
+    // Convert to floating point and apply exposure boost
+    float exposure = camera.getExposure() * 2.0f;  // Increase exposure
+    float r = (hdrColor.getRed() / 255.0f);
+    float g = (hdrColor.getGreen() / 255.0f);
+    float b = (hdrColor.getBlue() / 255.0f);
+
+    // Calculate luminance with adjusted weights
     float luminance = 0.2126f * r + 0.7152f * g + 0.0722f * b;
 
-    // Apply tone mapping
-    float toneMappedLuminance = luminance / (1 + luminance);
-    float scale = toneMappedLuminance / (luminance > 0.0f ? luminance : 1.0f);
+    // Adjust white point to preserve bright areas
+    float whitePoint = 1.2f;  // Increase this value to preserve more brightness
+    float toneMappedLuminance = (luminance * (1.0f + luminance / (whitePoint * whitePoint))) / (1.0f + luminance);
     
-    // Apply scale and clamp
+    // Calculate scale while preventing division by zero
+    float scale = luminance > 0.0f ? toneMappedLuminance / luminance : 1.0f;
+    
+    // Apply scale and convert back to [0,255] range
     r = std::clamp(r * scale * 255.0f, 0.0f, 255.0f);
     g = std::clamp(g * scale * 255.0f, 0.0f, 255.0f);
     b = std::clamp(b * scale * 255.0f, 0.0f, 255.0f);
 
-    return Color(static_cast<unsigned char>(r), static_cast<unsigned char>(g), static_cast<unsigned char>(b));
+    return Color(
+        static_cast<unsigned char>(r),
+        static_cast<unsigned char>(g),
+        static_cast<unsigned char>(b)
+    );
 }
+
+// Color Renderer::toneMap(const Color& hdrColor) const {
+//     // Convert color to floating point values in [0,1]
+//     float r = hdrColor.getRed() / 255.0f;
+//     float g = hdrColor.getGreen() / 255.0f;
+//     float b = hdrColor.getBlue() / 255.0f;
+    
+//     // Apply exposure adjustment
+//     float exposure = camera.getExposure();
+//     r *= exposure;
+//     g *= exposure;
+//     b *= exposure;
+    
+//     // Reinhard tone mapping operator
+//     r = r / (1.0f + r);
+//     g = g / (1.0f + g);
+//     b = b / (1.0f + b);
+    
+//     // Convert back to 0-255 range
+//     return Color(
+//         static_cast<unsigned char>(std::min(r * 255.0f, 255.0f)),
+//         static_cast<unsigned char>(std::min(g * 255.0f, 255.0f)),
+//         static_cast<unsigned char>(std::min(b * 255.0f, 255.0f))
+//     );
+// }
+
+// Color Renderer::toneMap(const Color& hdrColor) const {
+//     // Convert to floating point
+//     float r = hdrColor.getRed() / 255.0f;
+//     float g = hdrColor.getGreen() / 255.0f;
+//     float b = hdrColor.getBlue() / 255.0f;
+    
+//     // Apply exposure boost
+//     float exposure = camera.getExposure() * 10.0f;  // Increase exposure
+//     r *= exposure;
+//     g *= exposure;
+//     b *= exposure;
+    
+//     // Modified Reinhard operator that preserves more brightness
+//     float white = 2.0f;  // Higher value = brighter whites
+//     r = (r * (1.0f + r / (white * white))) / (1.0f + r);
+//     g = (g * (1.0f + g / (white * white))) / (1.0f + g);
+//     b = (b * (1.0f + b / (white * white))) / (1.0f + b);
+    
+//     // Convert back to [0,255] range
+//     return Color(
+//         static_cast<unsigned char>(std::min(r * 255.0f, 255.0f)),
+//         static_cast<unsigned char>(std::min(g * 255.0f, 255.0f)),
+//         static_cast<unsigned char>(std::min(b * 255.0f, 255.0f))
+//     );
+// }
+
 
 
 Color Renderer::renderPixel(const Ray& ray, int currentBounce) {
@@ -210,7 +291,7 @@ Color Renderer::renderPixel(const Ray& ray, int currentBounce) {
             } else {
                 baseColor = Color::fromFloatArray(material.diffusecolor);
             }
-            Color ambientColor = baseColor * 0.5f;
+            Color ambientColor = baseColor* 0.5;// * 0.5f;
             Color diffuseColor(0, 0, 0);
             Color specularColor(0, 0, 0);
             
@@ -310,7 +391,8 @@ Color Renderer::renderPixel(const Ray& ray, int currentBounce) {
         }
     }
 
-    return pixelColor;
+    return toneMap(pixelColor);
+    //return pixelColor;
 }
 
 Color Renderer::tracePath(const Ray& ray, int depth) {

@@ -174,6 +174,8 @@ Renderer::RenderMode IO::parseRenderMode(const std::string& renderModeStr) {
         return Renderer::RenderMode::BINARY;
     } else if (renderModeStr == "phong") {
         return Renderer::RenderMode::PHONG;
+    } else if (renderModeStr == "pathtracer") {
+        return Renderer::RenderMode::PATHTRACER;
     }
     throw std::invalid_argument("Unknown render mode: " + renderModeStr);
 }

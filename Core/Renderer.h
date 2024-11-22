@@ -10,7 +10,7 @@
 
 class Renderer {
 public:
-    enum class RenderMode { BINARY, PHONG};
+    enum class RenderMode { BINARY, PHONG, PATHTRACER};
 
     // Constructor that takes a Scene object
     Renderer(int nbounces, RenderMode rendermode, const Camera& camera, const Scene& scene, bool useBVH, bool useAntiAliasing = false, int samplesPerPixel = 4);
@@ -41,6 +41,10 @@ private:
     bool useBVH;
     bool useAntiAliasing; 
     int samplesPerPixel; 
+
+    Color tracePath(const Ray& ray, int depth = 0);
+    Vector3 randomHemisphereDirection(const Vector3& normal);
+    float randomFloat();
 };
 
 #endif // RENDERER_H

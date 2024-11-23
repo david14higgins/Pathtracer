@@ -395,6 +395,307 @@ Color Renderer::renderPixel(const Ray& ray, int currentBounce) {
     //return pixelColor;
 }
 
+// Color Renderer::tracePath(const Ray& ray, int depth) {
+//     if (depth >= nbounces) {
+//         return Color(0, 0, 0);
+//     }
+
+//     float minDistance = std::numeric_limits<float>::infinity();
+//     std::shared_ptr<Shape> closestShape = nullptr;
+//     Vector3 intersectionPoint;
+//     Vector3 normal;
+
+//     // Use existing intersection code
+//     if (!useBVH) {
+//         for (const auto& shape : scene.getShapes()) {
+//             float distance;
+//             if (shape->intersect(ray, distance) && distance < minDistance) {
+//                 minDistance = distance;
+//                 closestShape = shape;
+//                 intersectionPoint = ray.getOrigin() + ray.getDirection() * distance;
+//                 normal = shape->getNormal(intersectionPoint);
+//             }
+//         }
+//     } else {
+//         float distance;
+//         auto bvh = scene.getBVH();
+//         if (bvh && bvh->intersect(ray, distance, closestShape)) {
+//             if (distance < minDistance) {
+//                 minDistance = distance;
+//                 intersectionPoint = ray.getOrigin() + ray.getDirection() * distance;
+//                 normal = closestShape->getNormal(intersectionPoint);
+//             }
+//         }
+//     }
+
+//     if (!closestShape) {
+//         return Color::fromFloatArray(scene.getBackgroundColor());
+//     }
+
+//     Material material = closestShape->getMaterial();
+//     Color emittance(0, 0, 0);  // For future support of emissive materials
+
+//     // Russian Roulette termination
+//     if (depth > 5) {
+//         float continueProbability = 0.5f;
+//         if (randomFloat() > continueProbability) {
+//             return emittance;
+//         }
+//     }
+
+//     // Handle reflections
+//     if (material.isreflective) {
+//         float reflectProb = material.reflectivity;
+//         if (randomFloat() < reflectProb) {
+//             Vector3 reflectDir = ray.getDirection() - 
+//                                (normal * 2.0f * ray.getDirection().dot(normal));
+//             Ray reflectedRay(intersectionPoint + reflectDir * 1e-4f, reflectDir);
+//             Color reflectedColor = tracePath(reflectedRay, depth + 1);
+            
+//             // Get material color
+//             Color materialColor = material.hasTexture ? 
+//                 material.getTexture()->getColorAt(0, 0) : // Implement proper UV mapping
+//                 Color::fromFloatArray(material.specularcolor);
+                
+//             // Modulate reflected color by material color and reflectivity
+//             return reflectedColor * materialColor * (1.0f / reflectProb);
+//         }
+//     }
+
+//     // Handle refractions
+//     if (material.isrefractive) {
+//         float eta = 1.0f;  // Air refractive index
+//         float etaPrime = material.refractiveindex;
+//         float cosThetaI = -normal.dot(ray.getDirection());
+        
+//         // Handle ray entering or exiting medium
+//         if (cosThetaI < 0) {
+//             cosThetaI = -cosThetaI;
+//             normal = normal * -1;
+//             std::swap(eta, etaPrime);
+//         }
+
+//         float etaRatio = eta / etaPrime;
+//         float cosThetaT2 = 1.0f - etaRatio * etaRatio * (1.0f - cosThetaI * cosThetaI);
+
+//         if (cosThetaT2 > 0.0f) {
+//             // Calculate Fresnel terms
+//             float r0 = ((eta - etaPrime) / (eta + etaPrime)) * 
+//                       ((eta - etaPrime) / (eta + etaPrime));
+//             float fresnel = r0 + (1.0f - r0) * pow(1.0f - cosThetaI, 5.0f);
+
+//             // Probabilistically choose reflection or refraction
+//             if (randomFloat() < fresnel) {
+//                 // Reflection
+//                 Vector3 reflectDir = ray.getDirection() - 
+//                                    (normal * 2.0f * ray.getDirection().dot(normal));
+//                 Ray reflectedRay(intersectionPoint + reflectDir * 1e-4f, reflectDir);
+//                 return tracePath(reflectedRay, depth + 1) * (1.0f / fresnel);
+//             } else {
+//                 // Refraction
+//                 Vector3 refractionDir = (ray.getDirection() * etaRatio + 
+//                     normal * (etaRatio * cosThetaI - sqrt(cosThetaT2))).normalize();
+//                 Ray refractedRay(intersectionPoint - normal * 1e-4f, refractionDir);
+//                 return tracePath(refractedRay, depth + 1) * (1.0f / (1.0f - fresnel));
+//             }
+//         }
+//         // Total internal reflection
+//         Vector3 reflectDir = ray.getDirection() - 
+//                            (normal * 2.0f * ray.getDirection().dot(normal));
+//         Ray reflectedRay(intersectionPoint + reflectDir * 1e-4f, reflectDir);
+//         return tracePath(reflectedRay, depth + 1);
+//     }
+
+//     // Diffuse surface handling (original path tracing code)
+//     Vector3 newDirection = randomHemisphereDirection(normal);
+//     Ray newRay(intersectionPoint + newDirection * 1e-4f, newDirection);
+
+//     Color incomingLight = tracePath(newRay, depth + 1);
+
+//     // Calculate BRDF
+//     Color albedo = material.hasTexture ? 
+//         material.getTexture()->getColorAt(0, 0) : 
+//         Color::fromFloatArray(material.diffusecolor);
+
+//     float cosTheta = std::max(0.0f, normal.dot(newDirection));
+    
+//     // Direct lighting calculation
+//     Color directLight(0, 0, 0);
+//     for (const auto& light : scene.getLightSources()) {
+//         Vector3 lightPos = Vector3::fromArray(light->getPosition());
+//         Vector3 lightDir = (lightPos - intersectionPoint).normalize();
+        
+//         Ray shadowRay(intersectionPoint + lightDir * 1e-4f, lightDir);
+//         bool inShadow = false;
+        
+//         if (!useBVH) {
+//             for (const auto& shadowShape : scene.getShapes()) {
+//                 float shadowDistance;
+//                 if (shadowShape->intersect(shadowRay, shadowDistance) &&
+//                     shadowDistance < (lightPos - intersectionPoint).length()) {
+//                     inShadow = true;
+//                     break;
+//                 }
+//             }
+//         } else {
+//             float shadowDistance;
+//             std::shared_ptr<Shape> shadowShape;
+//             if (scene.getBVH()->intersect(shadowRay, shadowDistance, shadowShape)) {
+//                 if (shadowDistance < (lightPos - intersectionPoint).length()) {
+//                     inShadow = true;
+//                 }
+//             }
+//         }
+        
+//         if (!inShadow) {
+//             float lightCosTheta = std::max(0.0f, normal.dot(lightDir));
+//             directLight = directLight + Color::fromFloatArray(light->getIntensity()) * lightCosTheta;
+//         }
+//     }
+
+//     return emittance + albedo * (directLight + incomingLight * cosTheta) * (1.0f / M_PI);
+// }
+
+// Color Renderer::tracePath(const Ray& ray, int depth) {
+//     if (depth >= nbounces) {
+//         return Color(0, 0, 0);
+//     }
+
+//     float minDistance = std::numeric_limits<float>::infinity();
+//     std::shared_ptr<Shape> closestShape = nullptr;
+//     Vector3 intersectionPoint;
+//     Vector3 normal;
+
+//     // Use existing intersection code (keep your current intersection logic)
+//     if (!useBVH) {
+//         for (const auto& shape : scene.getShapes()) {
+//             float distance;
+//             if (shape->intersect(ray, distance) && distance < minDistance) {
+//                 minDistance = distance;
+//                 closestShape = shape;
+//                 intersectionPoint = ray.getOrigin() + ray.getDirection() * distance;
+//                 normal = shape->getNormal(intersectionPoint);
+//             }
+//         }
+//     } else {
+//         float distance;
+//         auto bvh = scene.getBVH();
+//         if (bvh && bvh->intersect(ray, distance, closestShape)) {
+//             if (distance < minDistance) {
+//                 minDistance = distance;
+//                 intersectionPoint = ray.getOrigin() + ray.getDirection() * distance;
+//                 normal = closestShape->getNormal(intersectionPoint);
+//             }
+//         }
+//     }
+
+//     if (!closestShape) {
+//         return Color::fromFloatArray(scene.getBackgroundColor());
+//     }
+
+//     Material material = closestShape->getMaterial();
+    
+//     // Get material color (considering textures)
+//     Color materialColor = material.hasTexture ? 
+//         material.getTexture()->getColorAt(0, 0) : 
+//         Color::fromFloatArray(material.diffusecolor);
+
+//     // Russian Roulette termination with higher probability of continuation
+//     if (depth > 3) {
+//         float continueProbability = 0.8f;  // Increased from 0.5
+//         if (randomFloat() > continueProbability) {
+//             return materialColor * 0.5f;  // Return some ambient light instead of black
+//         }
+//     }
+
+//     // Direct lighting calculation
+//     Color directLight(0, 0, 0);
+//     for (const auto& light : scene.getLightSources()) {
+//         Vector3 lightPos = Vector3::fromArray(light->getPosition());
+//         Vector3 lightDir = (lightPos - intersectionPoint).normalize();
+//         float lightDistance = (lightPos - intersectionPoint).length();
+        
+//         // Shadow ray check
+//         Ray shadowRay(intersectionPoint + lightDir * 1e-4f, lightDir);
+//         bool inShadow = false;
+        
+//         if (!useBVH) {
+//             for (const auto& shadowShape : scene.getShapes()) {
+//                 float shadowDistance;
+//                 if (shadowShape->intersect(shadowRay, shadowDistance) &&
+//                     shadowDistance < lightDistance) {
+//                     inShadow = true;
+//                     break;
+//                 }
+//             }
+//         } else {
+//             float shadowDistance;
+//             std::shared_ptr<Shape> shadowShape;
+//             if (scene.getBVH()->intersect(shadowRay, shadowDistance, shadowShape) &&
+//                 shadowDistance < lightDistance) {
+//                 inShadow = true;
+//             }
+//         }
+        
+//         if (!inShadow) {
+//             float lightCosTheta = std::max(0.0f, normal.dot(lightDir));
+//             // Add distance attenuation
+//             float attenuation = 1.0f / (1.0f + lightDistance * lightDistance);
+//             directLight = directLight + Color::fromFloatArray(light->getIntensity()) * 
+//                          lightCosTheta * attenuation * 5.0f;  // Increased intensity multiplier
+//         }
+//     }
+
+//     // Indirect lighting calculation
+//     Vector3 newDirection = randomHemisphereDirection(normal);
+//     Ray newRay(intersectionPoint + newDirection * 1e-4f, newDirection);
+//     Color indirectLight = tracePath(newRay, depth + 1);
+
+//     float cosTheta = std::max(0.0f, normal.dot(newDirection));
+    
+//     // Combine direct and indirect lighting with material properties
+//     Color finalColor = materialColor * (directLight + indirectLight * cosTheta * 0.5f);
+    
+//     // Handle reflections with fresnel effect
+//     if (material.isreflective) {
+//         float reflectivity = material.reflectivity;
+//         Vector3 reflectDir = ray.getDirection() - normal * 2.0f * ray.getDirection().dot(normal);
+//         Ray reflectedRay(intersectionPoint + reflectDir * 1e-4f, reflectDir);
+//         Color reflectedColor = tracePath(reflectedRay, depth + 1);
+        
+//         // Fresnel approximation
+//         float fresnel = material.reflectivity + (1.0f - material.reflectivity) * 
+//                        pow(1.0f - std::abs(normal.dot(ray.getDirection())), 5.0f);
+        
+//         finalColor = finalColor * (1.0f - fresnel) + reflectedColor * fresnel;
+//     }
+
+//     return finalColor;
+// }
+
+// Vector3 Renderer::randomHemisphereDirection(const Vector3& normal){
+//     float u1 = randomFloat();
+//     float u2 = randomFloat();
+    
+//     float r = std::sqrt(1.0f - u1 * u1);
+//     float phi = 2.0f * M_PI * u2;
+    
+//     // Change normal.x() to normal.x
+//     Vector3 tangent = std::abs(normal.x) > 0.9f ? 
+//         Vector3(0, 1, 0) : Vector3(1, 0, 0);
+    
+//     Vector3 bitangent = normal.cross(tangent).normalize();
+//     tangent = bitangent.cross(normal);
+    
+//     return (tangent * (r * std::cos(phi)) + 
+//             bitangent * (r * std::sin(phi)) + 
+//             normal * u1).normalize();
+// }
+
+// float Renderer::randomFloat() {
+//     return static_cast<float>(rand()) / RAND_MAX;
+// }
+
 Color Renderer::tracePath(const Ray& ray, int depth) {
     if (depth >= nbounces) {
         return Color(0, 0, 0);
@@ -402,10 +703,9 @@ Color Renderer::tracePath(const Ray& ray, int depth) {
 
     float minDistance = std::numeric_limits<float>::infinity();
     std::shared_ptr<Shape> closestShape = nullptr;
-    Vector3 intersectionPoint;
-    Vector3 normal;
+    Vector3 intersectionPoint, normal;
 
-    // Use existing intersection code
+    // Intersection logic
     if (!useBVH) {
         for (const auto& shape : scene.getShapes()) {
             float distance;
@@ -418,121 +718,43 @@ Color Renderer::tracePath(const Ray& ray, int depth) {
         }
     } else {
         float distance;
-        auto bvh = scene.getBVH();
-        if (bvh && bvh->intersect(ray, distance, closestShape)) {
-            if (distance < minDistance) {
-                minDistance = distance;
-                intersectionPoint = ray.getOrigin() + ray.getDirection() * distance;
-                normal = closestShape->getNormal(intersectionPoint);
-            }
+        if (scene.getBVH()->intersect(ray, distance, closestShape) && distance < minDistance) {
+            minDistance = distance;
+            intersectionPoint = ray.getOrigin() + ray.getDirection() * distance;
+            normal = closestShape->getNormal(intersectionPoint);
         }
     }
 
     if (!closestShape) {
-        return Color::fromFloatArray(scene.getBackgroundColor());
+        // Increase background contribution
+        Color bgColor = Color::fromFloatArray(scene.getBackgroundColor());
+        return bgColor * 2.0f;  // Multiply background intensity
     }
 
     Material material = closestShape->getMaterial();
-    Color emittance(0, 0, 0);  // For future support of emissive materials
-
-    // Russian Roulette termination
-    if (depth > 5) {
-        float continueProbability = 0.5f;
-        if (randomFloat() > continueProbability) {
-            return emittance;
-        }
-    }
-
-    // Handle reflections
-    if (material.isreflective) {
-        float reflectProb = material.reflectivity;
-        if (randomFloat() < reflectProb) {
-            Vector3 reflectDir = ray.getDirection() - 
-                               (normal * 2.0f * ray.getDirection().dot(normal));
-            Ray reflectedRay(intersectionPoint + reflectDir * 1e-4f, reflectDir);
-            Color reflectedColor = tracePath(reflectedRay, depth + 1);
-            
-            // Get material color
-            Color materialColor = material.hasTexture ? 
-                material.getTexture()->getColorAt(0, 0) : // Implement proper UV mapping
-                Color::fromFloatArray(material.specularcolor);
-                
-            // Modulate reflected color by material color and reflectivity
-            return reflectedColor * materialColor * (1.0f / reflectProb);
-        }
-    }
-
-    // Handle refractions
-    if (material.isrefractive) {
-        float eta = 1.0f;  // Air refractive index
-        float etaPrime = material.refractiveindex;
-        float cosThetaI = -normal.dot(ray.getDirection());
-        
-        // Handle ray entering or exiting medium
-        if (cosThetaI < 0) {
-            cosThetaI = -cosThetaI;
-            normal = normal * -1;
-            std::swap(eta, etaPrime);
-        }
-
-        float etaRatio = eta / etaPrime;
-        float cosThetaT2 = 1.0f - etaRatio * etaRatio * (1.0f - cosThetaI * cosThetaI);
-
-        if (cosThetaT2 > 0.0f) {
-            // Calculate Fresnel terms
-            float r0 = ((eta - etaPrime) / (eta + etaPrime)) * 
-                      ((eta - etaPrime) / (eta + etaPrime));
-            float fresnel = r0 + (1.0f - r0) * pow(1.0f - cosThetaI, 5.0f);
-
-            // Probabilistically choose reflection or refraction
-            if (randomFloat() < fresnel) {
-                // Reflection
-                Vector3 reflectDir = ray.getDirection() - 
-                                   (normal * 2.0f * ray.getDirection().dot(normal));
-                Ray reflectedRay(intersectionPoint + reflectDir * 1e-4f, reflectDir);
-                return tracePath(reflectedRay, depth + 1) * (1.0f / fresnel);
-            } else {
-                // Refraction
-                Vector3 refractionDir = (ray.getDirection() * etaRatio + 
-                    normal * (etaRatio * cosThetaI - sqrt(cosThetaT2))).normalize();
-                Ray refractedRay(intersectionPoint - normal * 1e-4f, refractionDir);
-                return tracePath(refractedRay, depth + 1) * (1.0f / (1.0f - fresnel));
-            }
-        }
-        // Total internal reflection
-        Vector3 reflectDir = ray.getDirection() - 
-                           (normal * 2.0f * ray.getDirection().dot(normal));
-        Ray reflectedRay(intersectionPoint + reflectDir * 1e-4f, reflectDir);
-        return tracePath(reflectedRay, depth + 1);
-    }
-
-    // Diffuse surface handling (original path tracing code)
-    Vector3 newDirection = randomHemisphereDirection(normal);
-    Ray newRay(intersectionPoint + newDirection * 1e-4f, newDirection);
-
-    Color incomingLight = tracePath(newRay, depth + 1);
-
-    // Calculate BRDF
-    Color albedo = material.hasTexture ? 
+    Color materialColor = material.hasTexture ? 
         material.getTexture()->getColorAt(0, 0) : 
         Color::fromFloatArray(material.diffusecolor);
 
-    float cosTheta = std::max(0.0f, normal.dot(newDirection));
-    
-    // Direct lighting calculation
+    if (depth > 3) {
+        float continueProbability = 0.9f;
+        if (randomFloat() > continueProbability) {
+            return materialColor * (1.0f - continueProbability);
+        }
+    }
+
     Color directLight(0, 0, 0);
     for (const auto& light : scene.getLightSources()) {
-        Vector3 lightPos = Vector3::fromArray(light->getPosition());
-        Vector3 lightDir = (lightPos - intersectionPoint).normalize();
-        
+        Vector3 lightDir = (Vector3::fromArray(light->getPosition()) - intersectionPoint).normalize();
+        float lightDistance = (Vector3::fromArray(light->getPosition()) - intersectionPoint).length();
+
         Ray shadowRay(intersectionPoint + lightDir * 1e-4f, lightDir);
         bool inShadow = false;
-        
+
         if (!useBVH) {
             for (const auto& shadowShape : scene.getShapes()) {
                 float shadowDistance;
-                if (shadowShape->intersect(shadowRay, shadowDistance) &&
-                    shadowDistance < (lightPos - intersectionPoint).length()) {
+                if (shadowShape->intersect(shadowRay, shadowDistance) && shadowDistance < lightDistance) {
                     inShadow = true;
                     break;
                 }
@@ -540,30 +762,48 @@ Color Renderer::tracePath(const Ray& ray, int depth) {
         } else {
             float shadowDistance;
             std::shared_ptr<Shape> shadowShape;
-            if (scene.getBVH()->intersect(shadowRay, shadowDistance, shadowShape)) {
-                if (shadowDistance < (lightPos - intersectionPoint).length()) {
-                    inShadow = true;
-                }
+            if (scene.getBVH()->intersect(shadowRay, shadowDistance, shadowShape) && shadowDistance < lightDistance) {
+                inShadow = true;
             }
         }
-        
+
         if (!inShadow) {
             float lightCosTheta = std::max(0.0f, normal.dot(lightDir));
-            directLight = directLight + Color::fromFloatArray(light->getIntensity()) * lightCosTheta;
+            float attenuation = 1.0f / (lightDistance * lightDistance);
+            directLight = directLight + Color::fromFloatArray(light->getIntensity()) * lightCosTheta * attenuation * 2.0f;
         }
     }
 
-    return emittance + albedo * (directLight + incomingLight * cosTheta) * (1.0f / M_PI);
+    Vector3 newDirection = randomHemisphereDirection(normal);
+    Ray newRay(intersectionPoint + newDirection * 1e-4f, newDirection);
+    Color indirectLight = tracePath(newRay, depth + 1);
+
+    float cosTheta = std::max(0.0f, normal.dot(newDirection));
+    Color finalColor = materialColor * (directLight + indirectLight * cosTheta);
+
+    if (material.isreflective) {
+        // Reflection
+        Vector3 reflectDir = ray.getDirection() - normal * 2.0f * ray.getDirection().dot(normal);
+        Ray reflectedRay(intersectionPoint + reflectDir * 1e-4f, reflectDir);
+        Color reflectedColor = tracePath(reflectedRay, depth + 1);
+        
+        // Fresnel approximation
+        float fresnel = material.reflectivity + (1.0f - material.reflectivity) * 
+                       pow(1.0f - std::abs(normal.dot(ray.getDirection())), 5.0f);
+        
+        finalColor = finalColor * (1.0f - fresnel) + reflectedColor * fresnel;
+    }
+
+    return finalColor;
 }
 
-Vector3 Renderer::randomHemisphereDirection(const Vector3& normal){
+Vector3 Renderer::randomHemisphereDirection(const Vector3& normal) {
     float u1 = randomFloat();
     float u2 = randomFloat();
     
     float r = std::sqrt(1.0f - u1 * u1);
     float phi = 2.0f * M_PI * u2;
     
-    // Change normal.x() to normal.x
     Vector3 tangent = std::abs(normal.x) > 0.9f ? 
         Vector3(0, 1, 0) : Vector3(1, 0, 0);
     
@@ -576,5 +816,5 @@ Vector3 Renderer::randomHemisphereDirection(const Vector3& normal){
 }
 
 float Renderer::randomFloat() {
-    return static_cast<float>(rand()) / RAND_MAX;
+    return rand() / (RAND_MAX + 1.0f);
 }

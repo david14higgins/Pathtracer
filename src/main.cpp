@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 
         bool useBVH = false;
         bool useAntiAliasing = false;
-        int samplesPerPixel = 8;
+        int samplesPerPixel = 4;
 
         for (int i = 2; i < argc; i++) {
             if (std::string(argv[i]) == "--useBVH") {

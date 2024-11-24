@@ -1,10 +1,11 @@
 #include "Camera.h"
 #include <sstream>
-#include "../Geometry/Vector3.h"
 #include <cmath>
+#include "../Geometry/Vector3.h"
 
-#define M_PI 3.14159265358979323846 // If M_PI is not already defined
+#define M_PI 3.14159265358979323846 
 
+// Constructor
 Camera::Camera(CameraType type, int width, int height, 
                std::array<float, 3> position, std::array<float, 3> lookAt, 
                std::array<float, 3> upVector, float fov, float exposure, float aperture, float focalDistance)
@@ -50,11 +51,11 @@ float Camera::getFocalDistance() const {
 }
 
 // Generate ray given pixels
-// Non-antialiased raytracer passes pixels as integers
 Ray Camera::generateRay(int x, int y) const {
     return generateRay(static_cast<float>(x) + 0.5f, static_cast<float>(y) + 0.5f);
 }
 
+// Generate ray given float coordinates
 Ray Camera::generateRay(float x, float y) const {
     float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
     float fovScale = std::tan(fov * 0.5f * M_PI / 180.0f);

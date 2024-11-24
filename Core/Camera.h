@@ -7,14 +7,14 @@
 
 class Camera {
 public:
+    // Enum for camera types
     enum class CameraType { PINHOLE, THIN_LENS };
 
-    // Constructor with JSON parameters
+    // Constructor 
     Camera(CameraType type, int width, int height, 
            std::array<float, 3> position, std::array<float, 3> lookAt, 
            std::array<float, 3> upVector, float fov, float exposure, float aperture, float focalDistance);
 
-    // Accessors
     const std::array<float, 3>& getPosition() const;
     const std::array<float, 3>& getLookAt() const;
     const std::array<float, 3>& getUpVector() const;
@@ -25,22 +25,21 @@ public:
     float getAperture() const;
     float getFocalDistance() const;
 
-    // Method to return camera details as a string
     std::string toString() const;
 
-    // Method to generate a ray for a given pixel (x, y)
-    Ray generateRay(int x, int y) const;  // Declaration of the generateRay method
+    // Method to generate a ray for a given pixel (x, y) takes integer and float coordinates
+    Ray generateRay(int x, int y) const; 
     Ray generateRay(float x, float y) const;
 private:
-    CameraType type;
-    int width, height;
-    std::array<float, 3> position;
-    std::array<float, 3> lookAt;
-    std::array<float, 3> upVector;
-    float fov;
-    float exposure;
-    float aperture;
-    float focalDistance;
+    CameraType type; // Camera type
+    int width, height; // Width and height of the camera
+    std::array<float, 3> position; // Position of the camera
+    std::array<float, 3> lookAt; // Look at point of the camera
+    std::array<float, 3> upVector; // Up vector of the camera
+    float fov; // Field of view of the camera
+    float exposure; // Exposure of the camera
+    float aperture; // Aperture of the camera
+    float focalDistance; // Focal distance of the camera
 
     // Helper method for generating random points on the lens
     Vector3 sampleLensPoint() const;

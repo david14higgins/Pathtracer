@@ -5,14 +5,14 @@
 #include <vector>
 #include <memory>
 #include <string>
-#include "../Lighting/Light.h"  // Assuming you have a base class for light types
-#include "../Lighting/PointLight.h"  // Include the PointLight class
-#include "../Geometry/Shape.h"  // Assuming you have a Shape base class for all shape types (e.g., Sphere, Triangle, Cylinder)
+#include "../Lighting/Light.h" 
+#include "../Lighting/PointLight.h"  
+#include "../Geometry/Shape.h" 
 #include "../Acceleration/BVHNode.h"
 
 class Scene {
 public:
-    // Constructor to initialize the scene with a background color, light sources, and shapes
+    // Constructor 
     Scene(const std::array<float, 3>& backgroundColor, 
           const std::vector<std::shared_ptr<Light>>& lightSources = {}, 
           const std::vector<std::shared_ptr<Shape>>& shapes = {});
@@ -23,16 +23,13 @@ public:
     // Add shapes to the scene
     void addShape(std::shared_ptr<Shape> shape);
 
-    // Accessor methods
     const std::array<float, 3>& getBackgroundColor() const;
     const std::vector<std::shared_ptr<Light>>& getLightSources() const;
     const std::vector<std::shared_ptr<Shape>>& getShapes() const;
 
-    // Method to return scene details as a string
-    std::string toString() const;
-
     std::shared_ptr<BVHNode> getBVH();
 
+    std::string toString() const;
 private:
     std::array<float, 3> backgroundColor;  // Background color (RGB)
     std::vector<std::shared_ptr<Light>> lightSources;  // List of light sources

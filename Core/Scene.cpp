@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 
-// Constructor to initialize the scene with a background color, light sources, and shapes
+// Constructor 
 Scene::Scene(const std::array<float, 3>& backgroundColor, 
              const std::vector<std::shared_ptr<Light>>& lightSources, 
              const std::vector<std::shared_ptr<Shape>>& shapes)
@@ -18,7 +18,6 @@ void Scene::addShape(std::shared_ptr<Shape> shape) {
     shapes.push_back(shape);
 }
 
-// Accessor methods for background color, light sources, and shapes
 const std::array<float, 3>& Scene::getBackgroundColor() const {
     return backgroundColor;
 }
@@ -31,7 +30,9 @@ const std::vector<std::shared_ptr<Shape>>& Scene::getShapes() const {
     return shapes;
 }
 
+// Get the BVH
 std::shared_ptr<BVHNode> Scene::getBVH() {
+    // Create the BVH if it doesn't exist and there are shapes
     if (!bvh && !shapes.empty()) {
         bvh = std::make_shared<BVHNode>(shapes, 0, shapes.size());
     }

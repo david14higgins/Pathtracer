@@ -9,7 +9,6 @@ public:
     Ray(const Vector3& origin, const Vector3& direction)
         : origin(origin), direction(direction.normalize()) {}
 
-    // Accessor methods
     const Vector3& getOrigin() const { return origin; }
     const Vector3& getDirection() const { return direction; }
 
@@ -18,7 +17,6 @@ public:
         return origin + direction * t;
     }
 
-    // Add toString method declaration
     std::string toString() const;
 
 private:

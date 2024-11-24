@@ -215,6 +215,7 @@ void IO::writePPM(const std::vector<std::vector<Color>>& pixelColors) {
         
         outFile.close();
         std::cout << "Image successfully written to: " << outputPath << std::endl;
+        
     }
     catch (const std::exception& e) {
         std::cerr << "Error writing PPM file: " << e.what() << std::endl;

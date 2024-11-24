@@ -155,9 +155,7 @@ std::string Renderer::toString() const {
 //     return Color(static_cast<unsigned char>(r), static_cast<unsigned char>(g), static_cast<unsigned char>(b));
 // }
 
-Color Renderer::toneMap(const Color& hdrColor) const {
-    // Convert to floating point and apply exposure boost
-    float exposure = camera.getExposure() * 2.0f;  // Increase exposure
+Color Renderer::toneMap(const Color& hdrColor) const {  
     float r = (hdrColor.getRed() / 255.0f);
     float g = (hdrColor.getGreen() / 255.0f);
     float b = (hdrColor.getBlue() / 255.0f);
@@ -166,7 +164,7 @@ Color Renderer::toneMap(const Color& hdrColor) const {
     float luminance = 0.2126f * r + 0.7152f * g + 0.0722f * b;
 
     // Adjust white point to preserve bright areas
-    float whitePoint = 1.2f;  // Increase this value to preserve more brightness
+    float whitePoint = 0.8f;  // Increase this value to preserve more brightness
     float toneMappedLuminance = (luminance * (1.0f + luminance / (whitePoint * whitePoint))) / (1.0f + luminance);
     
     // Calculate scale while preventing division by zero
@@ -281,7 +279,7 @@ Color Renderer::renderPixel(const Ray& ray, int currentBounce) {
     if (closestShape) {
         Material material = closestShape->getMaterial();
         if (rendermode == RenderMode::BINARY) {
-            pixelColor = Color(0, 255, 0);
+            pixelColor = Color(255, 0, 0);
         } else if (rendermode == RenderMode::PHONG) {   
             Color baseColor;
             if (material.hasTexture) {
@@ -334,7 +332,6 @@ Color Renderer::renderPixel(const Ray& ray, int currentBounce) {
             }
             
             pixelColor = ambientColor + diffuseColor + specularColor;
-            //std::cout << "Calculating reflectivity" << std::endl;
             if (material.isreflective && currentBounce < nbounces) {
                 Vector3 reflectDir = ray.getDirection() - (normal * ray.getDirection().dot(normal) * 2.0f);
                 Ray reflectedRay(intersectionPoint + reflectDir * 1e-4, reflectDir);
@@ -343,8 +340,7 @@ Color Renderer::renderPixel(const Ray& ray, int currentBounce) {
                 pixelColor = pixelColor * (1 - material.reflectivity) + reflectedColor * material.reflectivity;
             }
 
-            // Refraction logic
-            //std::cout << "Calculating refraction" << std::endl;
+            //Refraction logic
             if (material.isrefractive && currentBounce < nbounces) {
                 float eta = 1.0f; // Assumed to be the refractive index of air
                 float etaPrime = material.refractiveindex;
@@ -371,7 +367,8 @@ Color Renderer::renderPixel(const Ray& ray, int currentBounce) {
         } else if (rendermode == RenderMode::PATHTRACER) {
             // Accumulate colors as floats to avoid premature clamping
             float r = 0.0f, g = 0.0f, b = 0.0f;
-            int samples = samplesPerPixel * samplesPerPixel;
+            int ptSamplesPerPixel = 4;
+            int samples = ptSamplesPerPixel * ptSamplesPerPixel;
             
             for (int i = 0; i < samples; ++i) {
                 Color sample = tracePath(ray, 0);
@@ -391,8 +388,8 @@ Color Renderer::renderPixel(const Ray& ray, int currentBounce) {
         }
     }
 
-    return toneMap(pixelColor);
-    //return pixelColor;
+    //return toneMap(pixelColor);
+    return pixelColor;
 }
 
 // Color Renderer::tracePath(const Ray& ray, int depth) {

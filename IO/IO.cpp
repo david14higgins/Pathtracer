@@ -9,7 +9,7 @@
 
 Renderer IO::loadRenderer(const std::string& filename, bool useBVH, bool useAntiAliasing, int samplesPerPixel) {
     // Load the renderer from a JSON file
-    std::string filepath = "assets/" + filename;
+    std::string filepath = "sceneJsons/" + filename;
     json j = parseJSONFile(filepath);
 
     try {

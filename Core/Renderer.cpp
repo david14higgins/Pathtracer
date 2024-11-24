@@ -321,7 +321,7 @@ Color Renderer::renderPathTracer(const Ray& ray, int currentBounce) {
 Color Renderer::tracePath(const Ray& ray, int depth) {
     // If we have reached the maximum number of bounces, return black
     if (depth >= nbounces) {
-        return Color(0, 0, 0);
+        return Color::fromFloatArray(scene.getBackgroundColor());
     }
 
     // Initialize values 
@@ -331,7 +331,7 @@ Color Renderer::tracePath(const Ray& ray, int depth) {
 
     // Use findClosestIntersection instead of duplicating intersection logic
     if (!findClosestIntersection(ray, minDistance, closestShape, intersectionPoint, normal)) {
-        return Color(0, 0, 0);
+        return Color::fromFloatArray(scene.getBackgroundColor());
     }
 
     Material material = closestShape->getMaterial();
@@ -392,7 +392,6 @@ Color Renderer::tracePath(const Ray& ray, int depth) {
             }
         }
     }
-
     
     // Calculate indirect lighting
     Vector3 newDirection = randomHemisphereDirection(normal);
@@ -460,6 +459,7 @@ Color Renderer::tracePath(const Ray& ray, int depth) {
     }
     return finalColor;
 }
+
 
 // Find the closest intersection between a ray and a shape
 bool Renderer::findClosestIntersection(const Ray& ray, float& minDistance, 

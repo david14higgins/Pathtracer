@@ -1,0 +1,23 @@
+Consult README.md for execution instructions
+
+Feature List 
+
+Basic 
+a) Image writing - implemented and demonstrated (all ppms in TestSuite)
+b) Virtual pin-hole camera - implemented and demonstrated (all ppms in TestSuite)
+c) Intersection tests - implemented and demonstrated (all ppms in TestSuite)
+d) Blinn-Phong shading - implemented and demonstrated (simple_phong.ppm, phong_scene.ppm, etc...)
+e) Shadows - implemented and demonstrated (shadows.ppm)
+f) Tone mapping (linear) - implemented and demonstrated (tone_map.ppm)
+g) Reflection - implemented and demonstrated (reflections.ppm)
+h) Refraction - implemented and demonstrated (refractions.ppm)
+
+Intermediate 
+a) Textures - implemented and demonstrated (textures.ppm)
+b) Acceleration hierarchy - implemented and demonstrated (bvh_speed_up.ppm)
+
+Advances 
+a) Pixel sampling - implemented and demonstrated in Blinn-Phong and Pathtracer (simple_phong_antialisased.ppm and pathtracer_scene_antialiased.ppm)
+b) Lens sampling - implemented and demonstrated in Blinn-Phong and Pathtracer (phong_lens_sampling.ppm and pathtracer_lens_sampling.ppm)
+c) BRDF sampling - not implemented
+d) Light sampling - implemented for Blinn-Phong ONLY, for pathtracer is faulty (phong_area_lighting.ppm)

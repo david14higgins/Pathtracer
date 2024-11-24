@@ -17,6 +17,7 @@
 #include "../Materials/Material.h"
 #include "../Materials/Color.h"
 #include "../Lighting/Light.h"
+#include "../Lighting/AreaLight.h"
 
 // Constructor 
 Renderer::Renderer(int nbounces, RenderMode rendermode, const Camera& camera, const Scene& scene, bool useBVH, bool useAntiAliasing, int samplesPerPixel)
@@ -401,26 +402,82 @@ Color Renderer::renderBlinnPhong(const Ray& ray, int currentBounce) {
     
     Vector3 viewDir = ray.getDirection().normalize() * -1;
 
-    // Calculate lighting
-    for (const auto& light : scene.getLightSources()) {
-        // Create a shadow ray 
-        Vector3 lightPos = Vector3::fromArray(light->getPosition());
-        Vector3 lightDir = (lightPos - intersectionPoint).normalize();
-        Ray shadowRay(intersectionPoint + lightDir * 1e-4, lightDir);
+    // // Calculate lighting
+    // for (const auto& light : scene.getLightSources()) {
+    //     // Create a shadow ray 
+    //     Vector3 lightPos = Vector3::fromArray(light->getPosition());
+    //     Vector3 lightDir = (lightPos - intersectionPoint).normalize();
+    //     Ray shadowRay(intersectionPoint + lightDir * 1e-4, lightDir);
         
-        // Check if the shadow ray is in shadow
-        if (!isInShadow(shadowRay, (lightPos - intersectionPoint).length())) {
-            Vector3 halfDir = (viewDir + lightDir).normalize();
+    //     // Check if the shadow ray is in shadow
+    //     if (!isInShadow(shadowRay, (lightPos - intersectionPoint).length())) {
+    //         Vector3 halfDir = (viewDir + lightDir).normalize();
 
-            // Calculate diffuse lighting
-            float diff = std::max(normal.dot(lightDir), 0.0f);
-            diffuseColor += Color::fromFloatArray(material.diffusecolor) * diff * material.kd * 
-                           Color::fromFloatArray(light->getIntensity());
+    //         // Calculate diffuse lighting
+    //         float diff = std::max(normal.dot(lightDir), 0.0f);
+    //         diffuseColor += Color::fromFloatArray(material.diffusecolor) * diff * material.kd * 
+    //                        Color::fromFloatArray(light->getIntensity());
 
-            // Calculate specular lighting
-            float spec = std::pow(std::max(normal.dot(halfDir), 0.0f), material.specularexponent);
-            specularColor += Color::fromFloatArray(material.specularcolor) * spec * material.ks * 
+    //         // Calculate specular lighting
+    //         float spec = std::pow(std::max(normal.dot(halfDir), 0.0f), material.specularexponent);
+    //         specularColor += Color::fromFloatArray(material.specularcolor) * spec * material.ks * 
+    //                         Color::fromFloatArray(light->getIntensity());
+    //     }
+    // }
+
+    // Calculate lighting with soft shadows for area lights
+    for (const auto& light : scene.getLightSources()) {
+        int shadowSamples = 16; // Number of samples for soft shadows
+        Color shadowFactor(0, 0, 0);
+        
+        if (auto areaLight = dynamic_cast<const AreaLight*>(light.get())) {
+            // Get multiple sample points on the area light
+            auto lightPoints = areaLight->getSamplePoints(shadowSamples);
+            
+            for (const auto& lightPoint : lightPoints) {
+                Vector3 lightDir = (lightPoint - intersectionPoint).normalize();
+                float lightDistance = (lightPoint - intersectionPoint).length();
+                Ray shadowRay(intersectionPoint + lightDir * 1e-4, lightDir);
+                
+                if (!isInShadow(shadowRay, lightDistance)) {
+                    Vector3 halfDir = (viewDir + lightDir).normalize();
+                    
+                    // Calculate diffuse lighting
+                    float diff = std::max(normal.dot(lightDir), 0.0f);
+                    float attenuation = 1.0f / (lightDistance * lightDistance);
+                    
+                    diffuseColor += Color::fromFloatArray(material.diffusecolor) * diff * material.kd * 
+                                  Color::fromFloatArray(light->getIntensity()) * attenuation;
+                    
+                    // Calculate specular lighting
+                    float spec = std::pow(std::max(normal.dot(halfDir), 0.0f), material.specularexponent);
+                    specularColor += Color::fromFloatArray(material.specularcolor) * spec * material.ks * 
+                                   Color::fromFloatArray(light->getIntensity()) * attenuation;
+                }
+            }
+
+                        // Average the contributions
+            float scale = 1.0f / shadowSamples;
+            diffuseColor = diffuseColor * scale;
+            specularColor = specularColor * scale;
+        } else {
+            // Handle point lights as before
+            Vector3 lightPos = Vector3::fromArray(light->getPosition());
+            Vector3 lightDir = (lightPos - intersectionPoint).normalize();
+            Ray shadowRay(intersectionPoint + lightDir * 1e-4, lightDir);
+
+            if (!isInShadow(shadowRay, (lightPos - intersectionPoint).length())) {
+                 Vector3 halfDir = (viewDir + lightDir).normalize();
+                // Calculate diffuse lighting
+                float diff = std::max(normal.dot(lightDir), 0.0f);
+                diffuseColor += Color::fromFloatArray(material.diffusecolor) * diff * material.kd * 
                             Color::fromFloatArray(light->getIntensity());
+
+                // Calculate specular lighting
+                float spec = std::pow(std::max(normal.dot(halfDir), 0.0f), material.specularexponent);
+                specularColor += Color::fromFloatArray(material.specularcolor) * spec * material.ks * 
+                                Color::fromFloatArray(light->getIntensity());
+            }
         }
     }
     

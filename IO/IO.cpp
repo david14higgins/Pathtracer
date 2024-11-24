@@ -5,6 +5,7 @@
 #include "../Geometry/Cylinder.h"
 #include "../Geometry/Triangle.h"
 #include "../Lighting/PointLight.h"
+#include "../Lighting/AreaLight.h"
 
 Renderer IO::loadRenderer(const std::string& filename, bool useBVH, bool useAntiAliasing, int samplesPerPixel) {
     // Load the renderer from a JSON file
@@ -172,10 +173,37 @@ std::vector<std::shared_ptr<Light>> IO::loadLightsFromJSON(const json& sceneData
     if (sceneData.contains("lightsources")) {
         // Loop through the light sources
         for (const auto& lightData : sceneData["lightsources"]) {
-            if (lightData["type"] == "pointlight") {
+            // if (lightData["type"] == "pointlight") {
+            //     lights.push_back(std::make_shared<PointLight>(
+            //         std::array<float, 3>{lightData["position"][0], lightData["position"][1], lightData["position"][2]},
+            //         std::array<float, 3>{lightData["intensity"][0], lightData["intensity"][1], lightData["intensity"][2]}
+            //     ));
+            // }
+            std::string lightType = lightData["type"];
+            if (lightType == "pointlight") {
                 lights.push_back(std::make_shared<PointLight>(
-                    std::array<float, 3>{lightData["position"][0], lightData["position"][1], lightData["position"][2]},
-                    std::array<float, 3>{lightData["intensity"][0], lightData["intensity"][1], lightData["intensity"][2]}
+                    std::array<float, 3>{lightData["position"][0], 
+                                       lightData["position"][1], 
+                                       lightData["position"][2]},
+                    std::array<float, 3>{lightData["intensity"][0], 
+                                       lightData["intensity"][1], 
+                                       lightData["intensity"][2]}
+                ));
+            }
+            else if (lightType == "arealight") {
+                lights.push_back(std::make_shared<AreaLight>(
+                    std::array<float, 3>{lightData["position"][0], 
+                                       lightData["position"][1], 
+                                       lightData["position"][2]},
+                    std::array<float, 3>{lightData["intensity"][0], 
+                                       lightData["intensity"][1], 
+                                       lightData["intensity"][2]},
+                    std::array<float, 3>{lightData["u_axis"][0], 
+                                       lightData["u_axis"][1], 
+                                       lightData["u_axis"][2]},
+                    std::array<float, 3>{lightData["v_axis"][0], 
+                                       lightData["v_axis"][1], 
+                                       lightData["v_axis"][2]}
                 ));
             }
         }

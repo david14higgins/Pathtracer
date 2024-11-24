@@ -3,12 +3,13 @@
 #include <algorithm>
 #include <initializer_list>
 
-// Constructor definition (only define it here)
+// Constructor for the triangle
 Triangle::Triangle(const Vector3& v0, const Vector3& v1, const Vector3& v2, const Material& material)
     : Shape(material), v0(v0), v1(v1), v2(v2) {}
 
+// Intersection test with a ray
 bool Triangle::intersect(const Ray& ray, float& t) const {
-        // Compute the two edges of the triangle
+    // Compute the two edges of the triangle
     Vector3 edge1 = v1 - v0;
     Vector3 edge2 = v2 - v0;
 
@@ -49,6 +50,7 @@ bool Triangle::intersect(const Ray& ray, float& t) const {
     return false;  // Intersection is behind the ray
 }
 
+// Get the normal at a point
 Vector3 Triangle::getNormal(const Vector3& point) const {
     // Calculate two edges of the triangle
     Vector3 edge1 = v1 - v0;
@@ -67,23 +69,27 @@ std::string Triangle::toString() const {
     return ss.str();
 }
 
+// Get the UV coordinates at a point
 void Triangle::getUVCoordinates(const Vector3& point, float& u, float& v) const {
     // Simple planar mapping based on triangle vertices
     Vector3 edge1 = v1 - v0;
     Vector3 edge2 = v2 - v0;
     Vector3 p = point - v0;
     
+    // Calculate the determinants
     float d00 = edge1.dot(edge1);
     float d01 = edge1.dot(edge2);
     float d11 = edge2.dot(edge2);
     float d20 = p.dot(edge1);
     float d21 = p.dot(edge2);
     
+    // Calculate the denominator
     float denom = d00 * d11 - d01 * d01;
     v = (d11 * d20 - d01 * d21) / denom;
     u = (d00 * d21 - d01 * d20) / denom;
 }
 
+// Get the bounding box of the triangle
 AABB Triangle::getBoundingBox() const {
     Vector3 min_bounds(
         std::min(std::min(v0[0], v1[0]), v2[0]),

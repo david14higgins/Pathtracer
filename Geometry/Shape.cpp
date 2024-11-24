@@ -1,6 +1,7 @@
 #include "Shape.h"
 #include <sstream>
 
+// Convert the shape to a string
 std::string Shape::toString() const {
     std::ostringstream oss;
     oss << "Shape {" << std::endl;

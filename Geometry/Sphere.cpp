@@ -2,12 +2,11 @@
 #include <cmath>
 #define M_PI 3.14159265358979323846
 
-
-
-// Constructor definition (only define it here)
+// Constructor for the sphere
 Sphere::Sphere(const Vector3& center, float radius, const Material& material)
     : Shape(material), center(center), radius(radius) {}
 
+// Intersection test with a ray
 bool Sphere::intersect(const Ray& ray, float& t) const {
     // Calculate vector from ray origin to sphere center
     Vector3 oc = ray.getOrigin() - center;
@@ -41,6 +40,7 @@ bool Sphere::intersect(const Ray& ray, float& t) const {
     }
 }
 
+// Get the normal at a point
 Vector3 Sphere::getNormal(const Vector3& point) const {
     // Calculate the vector from the center of the sphere to the point
     Vector3 normal = (point - center).normalize();
@@ -56,6 +56,7 @@ std::string Sphere::toString() const {
     return ss.str();
 }
 
+// Get the UV coordinates at a point
 void Sphere::getUVCoordinates(const Vector3& point, float& u, float& v) const {
     Vector3 dir = (point - center).normalize();
     

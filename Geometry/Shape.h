@@ -11,25 +11,23 @@
 
 class Shape {
 public:
-    // Add a constructor that initializes material
-    Shape(const Material& material) : material(material) {}
+    
+    Shape(const Material& material) : material(material) {} // Constructor that initializes material
 
-    virtual ~Shape() = default;
+    virtual ~Shape() = default; // Destructor
 
-    // Pure virtual function for intersection
-    virtual bool intersect(const Ray& ray, float& t) const = 0;
+    virtual bool intersect(const Ray& ray, float& t) const = 0; // Pure virtual function to intersect with a ray
 
-    // Pure virtual function to compute the normal at a given point
-    virtual Vector3 getNormal(const Vector3& point) const = 0;
+    virtual Vector3 getNormal(const Vector3& point) const = 0; // Pure virtual function to get the normal at a point
 
-    void setMaterial(const Material& m) { material = m; }
+    void setMaterial(const Material& m) { material = m; } 
     const Material& getMaterial() const { return material; }
 
     virtual std::string toString() const;
 
-    virtual void getUVCoordinates(const Vector3& point, float& u, float& v) const = 0;
+    virtual void getUVCoordinates(const Vector3& point, float& u, float& v) const = 0; // Pure virtual function to get the UV coordinates at a point
 
-    virtual AABB getBoundingBox() const = 0;
+    virtual AABB getBoundingBox() const = 0; // Pure virtual function to get the bounding box of the shape
 
 
 protected:

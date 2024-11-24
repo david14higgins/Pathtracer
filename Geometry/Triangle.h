@@ -8,22 +8,21 @@
 
 class Triangle : public Shape {
 public:
-    // Constructor declaration (only declare it here)
-    Triangle(const Vector3& v0, const Vector3& v1, const Vector3& v2, const Material& material);
+    Triangle(const Vector3& v0, const Vector3& v1, const Vector3& v2, const Material& material); // Constructor 
 
-    bool intersect(const Ray& ray, float& t) const override;
+    bool intersect(const Ray& ray, float& t) const override; // Intersection test with a ray
 
-    Vector3 getNormal(const Vector3& point) const override;
+    Vector3 getNormal(const Vector3& point) const override; // Get the normal at a point
 
     std::string toString() const override;
 
-    virtual void getUVCoordinates(const Vector3& point, float& u, float& v) const override;
+    virtual void getUVCoordinates(const Vector3& point, float& u, float& v) const override; // Get the UV coordinates at a point
 
-    AABB getBoundingBox() const override;
+    AABB getBoundingBox() const override; // Get the bounding box of the triangle
 
 
 private:
-    Vector3 v0, v1, v2;
+    Vector3 v0, v1, v2; // Vertices of the triangle
 };
 
 #endif  // TRIANGLE_H

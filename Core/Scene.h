@@ -8,7 +8,7 @@
 #include "../Lighting/Light.h"  // Assuming you have a base class for light types
 #include "../Lighting/PointLight.h"  // Include the PointLight class
 #include "../Geometry/Shape.h"  // Assuming you have a Shape base class for all shape types (e.g., Sphere, Triangle, Cylinder)
-#include "../Geometry/BVHNode.h"
+#include "../Acceleration/BVHNode.h"
 
 class Scene {
 public:

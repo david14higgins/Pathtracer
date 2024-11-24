@@ -1,7 +1,7 @@
 #ifndef BVH_NODE_H
 #define BVH_NODE_H
 
-#include "Shape.h"
+#include "../Geometry/Shape.h"
 #include "AABB.h"
 #include <memory>
 #include <vector>

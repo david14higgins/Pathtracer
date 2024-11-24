@@ -1,9 +1,10 @@
 #ifndef TRIANGLE_H
 #define TRIANGLE_H
 
+#include <sstream>
 #include "Shape.h"
 #include "Vector3.h"
-#include <sstream>
+
 
 class Triangle : public Shape {
 public:

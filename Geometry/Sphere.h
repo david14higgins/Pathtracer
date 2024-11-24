@@ -1,11 +1,10 @@
 #ifndef SPHERE_H
 #define SPHERE_H
 
-#include "Shape.h"
-#include "Vector3.h"
 #include <string>
 #include <sstream>
-
+#include "Shape.h"
+#include "Vector3.h"
 
 class Sphere : public Shape {
 public:

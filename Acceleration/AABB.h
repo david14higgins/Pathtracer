@@ -1,7 +1,7 @@
 #ifndef AABB_H
 #define AABB_H
 
-#include "Vector3.h"
+#include "../Geometry/Vector3.h"
 #include "../Core/Ray.h"
 
 class AABB {

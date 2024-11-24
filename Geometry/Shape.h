@@ -2,11 +2,11 @@
 #define SHAPE_H
 
 #include <memory>
-#include "../Materials/Material.h"
-#include "Vector3.h" // Assuming you have a Vector3 class
-#include "../Core/Ray.h"
 #include <string>
-#include "AABB.h"
+#include "Vector3.h" 
+#include "../Materials/Material.h"
+#include "../Core/Ray.h"
+#include "../Acceleration/AABB.h"
 
 
 class Shape {

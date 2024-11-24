@@ -533,15 +533,13 @@ Color Renderer::tracePath(const Ray& ray, int depth) {
 
     // Calculate direct lighting
     Color directLight(0, 0, 0);
-    for (const auto& light : scene.getLightSources()) {
+    for (const auto& light : scene.getLightSources()) { 
+        // Create a shadow ray 
         Vector3 lightPos = Vector3::fromArray(light->getPosition());
         Vector3 lightDir = (lightPos - intersectionPoint).normalize();
         float lightDistance = (lightPos - intersectionPoint).length();
-
         Ray shadowRay(intersectionPoint + lightDir * 1e-4f, lightDir);
-        
-        // Use isInShadow method
-        if (!isInShadow(shadowRay, lightDistance)) {
+        if (!isInShadow(shadowRay, lightDistance)) {    
             float lightCosTheta = std::max(0.0f, normal.dot(lightDir));
             float attenuation = 1.0f / (lightDistance * lightDistance);
             directLight = directLight + Color::fromFloatArray(light->getIntensity()) * lightCosTheta * attenuation * 2.0f;
@@ -553,7 +551,9 @@ Color Renderer::tracePath(const Ray& ray, int depth) {
     Ray newRay(intersectionPoint + newDirection * 1e-4f, newDirection);
     Color indirectLight = tracePath(newRay, depth + 1);
 
+    // Calculate cosine of the angle between the normal and the new direction
     float cosTheta = std::max(0.0f, normal.dot(newDirection));
+
     Color finalColor = baseColor * (directLight + indirectLight * cosTheta);
 
     // Handle reflections and refractions using Fresnel equations
@@ -563,12 +563,14 @@ Color Renderer::tracePath(const Ray& ray, int depth) {
         float cosThetaI = -normal.dot(ray.getDirection());
         bool entering = cosThetaI > 0;
 
+        // If the ray is exiting the material, swap the refractive indices
         if (!entering) {
             std::swap(eta, etaPrime);
             cosThetaI = -cosThetaI;
             normal = normal * -1;
         }
 
+        // Calculate ratio of refractive indices
         float etaRatio = eta / etaPrime;
         float sinThetaTSqr = etaRatio * etaRatio * (1 - cosThetaI * cosThetaI);
 
@@ -578,7 +580,9 @@ Color Renderer::tracePath(const Ray& ray, int depth) {
             // Total internal reflection
             fresnel = 1.0f;
         } else {
+            // Calculate cosine of the angle between the normal and the refracted ray direction
             float cosThetaT = std::sqrt(1 - sinThetaTSqr);
+            // Calculate reflection coefficients
             float Rs = ((etaPrime * cosThetaI) - (eta * cosThetaT)) / 
                       ((etaPrime * cosThetaI) + (eta * cosThetaT));
             float Rp = ((eta * cosThetaI) - (etaPrime * cosThetaT)) / 
@@ -606,7 +610,6 @@ Color Renderer::tracePath(const Ray& ray, int depth) {
             finalColor = reflectedColor;
         }
     }
-
     return finalColor;
 }
 
@@ -663,22 +666,21 @@ bool Renderer::isInShadow(const Ray& shadowRay, float lightDistance) {
     return false;
 }
 
+// Generate a random direction on a hemisphere
 Vector3 Renderer::randomHemisphereDirection(const Vector3& normal) {
     float u1 = randomFloat();
     float u2 = randomFloat();
     
+    // Calculate radius and phi
     float r = std::sqrt(1.0f - u1 * u1);
     float phi = 2.0f * M_PI * u2;
     
-    Vector3 tangent = std::abs(normal.x) > 0.9f ? 
-        Vector3(0, 1, 0) : Vector3(1, 0, 0);
-    
+    // Calculate tangent and bitangent
+    Vector3 tangent = std::abs(normal.x) > 0.9f ? Vector3(0, 1, 0) : Vector3(1, 0, 0);
     Vector3 bitangent = normal.cross(tangent).normalize();
     tangent = bitangent.cross(normal);
     
-    return (tangent * (r * std::cos(phi)) + 
-            bitangent * (r * std::sin(phi)) + 
-            normal * u1).normalize();
+    return (tangent * (r * std::cos(phi)) + bitangent * (r * std::sin(phi)) + normal * u1).normalize();
 }
 
 float Renderer::randomFloat() {

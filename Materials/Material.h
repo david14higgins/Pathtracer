@@ -2,8 +2,7 @@
 #define MATERIAL_H
 
 #include <array>
-#include <string> // Include for std::string
-// Add to includes
+#include <string>
 #include "Texture.h"
 #include <memory>
 
@@ -20,23 +19,22 @@ public:
              const std::array<float, 3>& specularcolor, bool isreflective, float reflectivity,
              bool isrefractive, float refractiveindex, bool hasTexture = false, const std::string& textureFilename = "");
 
-    // Method to convert the object to a string representation
     std::string toString() const;
 
     std::shared_ptr<Texture> getTexture() const { return texture; }
 
-    float ks, kd, specularexponent;
-    std::array<float, 3> diffusecolor;
-    std::array<float, 3> specularcolor;
-    bool isreflective;
-    float reflectivity;
-    bool isrefractive;
-    float refractiveindex;
-    bool hasTexture; 
-    std::string textureFilename;
+    float ks, kd, specularexponent; // Specular and diffuse coefficients
+    std::array<float, 3> diffusecolor; // Diffuse color
+    std::array<float, 3> specularcolor; // Specular color
+    bool isreflective; // Reflective flag
+    float reflectivity; // Reflectivity coefficient
+    bool isrefractive; // Refractive flag
+    float refractiveindex; // Refractive index
+    bool hasTexture; // Texture flag
+    std::string textureFilename; // Texture filename
 
 private:
-    std::shared_ptr<Texture> texture;
+    std::shared_ptr<Texture> texture; // Texture pointer
 };
 
 #endif

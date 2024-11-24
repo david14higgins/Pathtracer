@@ -1,5 +1,3 @@
-// Color.h
-
 #pragma once
 #include <string>
 #include "../Geometry/Vector3.h"
@@ -10,7 +8,7 @@ private:
     Vector3 rgb; // RGB values as a Vector3
 
 public:
-    // Constructor to initialize color
+    // Constructor
     Color(unsigned char red = 0, unsigned char green = 0, unsigned char blue = 0)
         : rgb(red, green, blue) {}
 
@@ -34,7 +32,7 @@ public:
         return rgb.x == other.rgb.x && rgb.y == other.rgb.y && rgb.z == other.rgb.z;
     }
 
-// Overload operator += for adding a Color to the Color
+    // Overload operator += for adding a Color to the Color
     Color& operator+=(const Color& other) {
         rgb.x += other.rgb.x;
         rgb.y += other.rgb.y;
@@ -42,7 +40,7 @@ public:
         return *this;
     }
 
-        // Overload operator + for adding two Colors
+    // Overload operator + for adding two Colors
     Color operator+(const Color& other) const {
         return Color(
             static_cast<unsigned char>(std::clamp(rgb.x + other.rgb.x, 0.0f, 255.0f)),
@@ -60,7 +58,7 @@ public:
         );
     }
 
-        // Overload operator * for scalar multiplication
+    // Overload operator * for scalar multiplication
     Color operator*(float scalar) const {
         return Color(
             static_cast<unsigned char>(std::clamp(rgb.x * scalar, 0.0f, 255.0f)),
@@ -69,7 +67,7 @@ public:
         );
     }
 
-    // Clamping method to ensure color values remain in valid range
+    // Clamping method to ensure color values remain in valid range 0-255
     Color clamp() const {
         return Color(
             static_cast<unsigned char>(std::clamp(rgb.x, 0.0f, 255.0f)),
@@ -78,7 +76,7 @@ public:
         );
     }
 
-        // Method to create a color from an array of floats
+    // Method to create a color from an array of floats
     static Color fromFloatArray(const std::array<float, 3>& arr) {
         return Color(
             static_cast<unsigned char>(std::clamp(arr[0] * 255.0f, 0.0f, 255.0f)),

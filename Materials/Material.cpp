@@ -1,5 +1,5 @@
 #include "Material.h"
-#include <sstream> // Include for std::ostringstream
+#include <sstream> 
 
 // Parameterized constructor
 Material::Material(float ks, float kd, float specularexponent, const std::array<float, 3>& diffusecolor,
@@ -8,6 +8,8 @@ Material::Material(float ks, float kd, float specularexponent, const std::array<
     : ks(ks), kd(kd), specularexponent(specularexponent), diffusecolor(diffusecolor), specularcolor(specularcolor),
       isreflective(isreflective), reflectivity(reflectivity), isrefractive(isrefractive), refractiveindex(refractiveindex),
       hasTexture(hasTexture), textureFilename(textureFilename) {
+        
+        // Load the texture if it exists
         if (hasTexture && !textureFilename.empty()) {
             texture = std::make_shared<Texture>();
             if (!texture->loadFromPPM("textures/" + textureFilename)) {

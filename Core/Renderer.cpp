@@ -477,10 +477,10 @@ Color Renderer::renderBlinnPhong(const Ray& ray, int currentBounce) {
 Color Renderer::renderPathTracer(const Ray& ray, int currentBounce) {
     // Accumulate colors as floats to avoid premature clamping
     float r = 0.0f, g = 0.0f, b = 0.0f;
-    int ptSamplesPerPixel = 4;
-    int samples = ptSamplesPerPixel * ptSamplesPerPixel;
+    // Number of paths we trace per pixel
+    int pathsPerPixel = 16;
     
-    for (int i = 0; i < samples; ++i) {
+    for (int i = 0; i < pathsPerPixel; ++i) {
         Color sample = tracePath(ray, 0);
         r += sample.getRed() / 255.0f;
         g += sample.getGreen() / 255.0f;
@@ -488,7 +488,7 @@ Color Renderer::renderPathTracer(const Ray& ray, int currentBounce) {
     }
     
     // Average the samples and convert back to [0,255] range
-    float scale = 1.0f / samples;
+    float scale = 1.0f / pathsPerPixel;
     return Color(
         static_cast<unsigned char>(std::min(r * scale * 255.0f, 255.0f)),
         static_cast<unsigned char>(std::min(g * scale * 255.0f, 255.0f)),
@@ -497,38 +497,18 @@ Color Renderer::renderPathTracer(const Ray& ray, int currentBounce) {
 }
 
 Color Renderer::tracePath(const Ray& ray, int depth) {
+    // If we have reached the maximum number of bounces, return black
     if (depth >= nbounces) {
         return Color(0, 0, 0);
     }
 
+    // Initialize values 
     float minDistance = std::numeric_limits<float>::infinity();
     std::shared_ptr<Shape> closestShape = nullptr;
     Vector3 intersectionPoint, normal;
 
-    // Intersection logic
-    if (!useBVH) {
-        for (const auto& shape : scene.getShapes()) {
-            float distance;
-            if (shape->intersect(ray, distance) && distance < minDistance) {
-                minDistance = distance;
-                closestShape = shape;
-                intersectionPoint = ray.getOrigin() + ray.getDirection() * distance;
-                normal = shape->getNormal(intersectionPoint);
-            }
-        }
-    } else {
-        float distance;
-        if (scene.getBVH()->intersect(ray, distance, closestShape) && distance < minDistance) {
-            minDistance = distance;
-            intersectionPoint = ray.getOrigin() + ray.getDirection() * distance;
-            normal = closestShape->getNormal(intersectionPoint);
-        }
-    }
-
-    if (!closestShape) {
-        // Increase background contribution
-        Color bgColor = Color::fromFloatArray(scene.getBackgroundColor());
-        return bgColor * 2.0f;  // Multiply background intensity
+    if (!findClosestIntersection(ray, minDistance, closestShape, intersectionPoint, normal)) {
+        return Color(0, 0, 0);
     }
 
     Material material = closestShape->getMaterial();

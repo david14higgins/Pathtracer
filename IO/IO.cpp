@@ -7,6 +7,7 @@
 #include "../Lighting/PointLight.h"
 
 Renderer IO::loadRenderer(const std::string& filename, bool useBVH, bool useAntiAliasing, int samplesPerPixel) {
+    // Load the renderer from a JSON file
     std::string filepath = "assets/" + filename;
     json j = parseJSONFile(filepath);
 
@@ -46,13 +47,16 @@ Renderer IO::loadRenderer(const std::string& filename, bool useBVH, bool useAnti
     }
 }
 
+// Parse a JSON file
 json IO::parseJSONFile(const std::string& filepath) {
+    // Open the file
     std::ifstream file(filepath);
     if (!file.is_open()) {
         throw std::runtime_error("Failed to open file: " + filepath);
     }
 
     try {
+        // Parse the JSON file
         json j;
         file >> j;
         return j;
@@ -61,16 +65,20 @@ json IO::parseJSONFile(const std::string& filepath) {
     }
 }
 
+// Parse a material from JSON data
 Material IO::parseMaterial(const json& materialData) {
+    // Check if the material has a texture
     bool hasTexture = false;
     std::string textureFilename = "";
     if (materialData.contains("hasTexture")) {
         hasTexture = materialData["hasTexture"];
     }
+    // Check if the material has a texture filename
     if (materialData.contains("textureFilename")) {
         textureFilename = materialData["textureFilename"];
     }
 
+    // Create and return the material
     return Material(
         materialData["ks"],
         materialData["kd"],
@@ -86,7 +94,9 @@ Material IO::parseMaterial(const json& materialData) {
     );
 }
 
+// Parse a camera from JSON data
 Camera IO::parseCamera(const json& cameraData) {
+    // Parse the camera type
     Camera::CameraType type = Camera::CameraType::PINHOLE;
     if (cameraData["type"] == "thinlens") {
         type = Camera::CameraType::THIN_LENS;
@@ -95,13 +105,16 @@ Camera IO::parseCamera(const json& cameraData) {
     float aperture = 0.0f;
     float focalDistance = 0.0f;
     
+    // Check if the camera has an aperture
     if (cameraData.contains("aperture")) {
         aperture = cameraData["aperture"];
     }
+    // Check if the camera has a focal distance
     if (cameraData.contains("focalDistance")) {
         focalDistance = cameraData["focalDistance"];
     }
 
+    // Create and return the camera
     return Camera(
         type,
         cameraData["width"],
@@ -117,15 +130,21 @@ Camera IO::parseCamera(const json& cameraData) {
 }
 
 std::vector<std::shared_ptr<Shape>> IO::loadShapesFromJSON(const json& sceneData) {
+    // Create a vector to store the shapes
     std::vector<std::shared_ptr<Shape>> shapes;
 
+    // Loop through the shapes in the scene
     for (const auto& shapeData : sceneData["shapes"]) {
+        // Parse the shape type
         std::string type = shapeData["type"];
+
+        // Parse the material
         Material material;
         if (shapeData.contains("material")) {
             material = parseMaterial(shapeData["material"]);
         }
 
+        // Create the shape based on the type
         if (type == "sphere") {
             Vector3 center = {shapeData["center"][0], shapeData["center"][1], shapeData["center"][2]};
             shapes.push_back(std::make_shared<Sphere>(center, shapeData["radius"], material));
@@ -145,10 +164,13 @@ std::vector<std::shared_ptr<Shape>> IO::loadShapesFromJSON(const json& sceneData
     return shapes;
 }
 
+// Parse lights from JSON data
 std::vector<std::shared_ptr<Light>> IO::loadLightsFromJSON(const json& sceneData) {
     std::vector<std::shared_ptr<Light>> lights;
 
+    // Check if the scene has light sources
     if (sceneData.contains("lightsources")) {
+        // Loop through the light sources
         for (const auto& lightData : sceneData["lightsources"]) {
             if (lightData["type"] == "pointlight") {
                 lights.push_back(std::make_shared<PointLight>(
@@ -161,6 +183,7 @@ std::vector<std::shared_ptr<Light>> IO::loadLightsFromJSON(const json& sceneData
     return lights;
 }
 
+// Parse a scene from JSON data
 Scene IO::loadSceneFromJSON(const json& sceneData) {
     return Scene(
         std::array<float, 3>{sceneData["backgroundcolor"][0], sceneData["backgroundcolor"][1], sceneData["backgroundcolor"][2]},
@@ -169,6 +192,7 @@ Scene IO::loadSceneFromJSON(const json& sceneData) {
     );
 }
 
+// Parse a render mode from a string
 Renderer::RenderMode IO::parseRenderMode(const std::string& renderModeStr) {
     if (renderModeStr == "binary") {
         return Renderer::RenderMode::BINARY;
@@ -180,6 +204,7 @@ Renderer::RenderMode IO::parseRenderMode(const std::string& renderModeStr) {
     throw std::invalid_argument("Unknown render mode: " + renderModeStr);
 }
 
+// Write the pixel colors to a PPM file
 void IO::writePPM(const std::vector<std::vector<Color>>& pixelColors, const std::string& filename) {
     try {
         // Create output directory if it doesn't exist

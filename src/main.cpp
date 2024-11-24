@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
         Renderer renderer = IO::loadRenderer(filename, useBVH, useAntiAliasing, samplesPerPixel);
         auto start = std::chrono::high_resolution_clock::now();
         std::vector<std::vector<Color>> renderedScene = renderer.renderScene();
-        IO::writePPM(renderedScene);
+        IO::writePPM(renderedScene, filename);
         
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);

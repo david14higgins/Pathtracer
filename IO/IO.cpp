@@ -180,7 +180,7 @@ Renderer::RenderMode IO::parseRenderMode(const std::string& renderModeStr) {
     throw std::invalid_argument("Unknown render mode: " + renderModeStr);
 }
 
-void IO::writePPM(const std::vector<std::vector<Color>>& pixelColors) {
+void IO::writePPM(const std::vector<std::vector<Color>>& pixelColors, const std::string& filename) {
     try {
         // Create output directory if it doesn't exist
         std::filesystem::path outputDir = "renders";
@@ -188,8 +188,16 @@ void IO::writePPM(const std::vector<std::vector<Color>>& pixelColors) {
             std::filesystem::create_directories(outputDir);
         }
 
+        // Strip .json and append .ppm
+        std::string outputFilename = filename;
+        size_t jsonExtPos = outputFilename.rfind(".json");
+        if (jsonExtPos != std::string::npos) {
+            outputFilename = outputFilename.substr(0, jsonExtPos);
+        }
+        outputFilename += ".ppm";
+
         // Open the file for writing
-        std::filesystem::path outputPath = outputDir / "test.ppm";
+        std::filesystem::path outputPath = outputDir / outputFilename;
         std::ofstream outFile(outputPath);
         
         if (!outFile.is_open()) {

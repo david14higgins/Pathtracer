@@ -41,6 +41,9 @@ private:
     float aperture; // Aperture of the camera
     float focalDistance; // Focal distance of the camera
 
+    // Helper method for calculating the camera's coordinate system
+    void calculateCoordinateSystem(Vector3& forward, Vector3& right, Vector3& up) const;
+
     // Helper method for generating random points on the lens
     Vector3 sampleLensPoint() const;
 };

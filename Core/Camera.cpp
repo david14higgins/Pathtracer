@@ -63,20 +63,19 @@ Ray Camera::generateRay(float x, float y) const {
     float px = -(2.0f * x / width - 1.0f) * aspectRatio * fovScale;
     float py = (1.0f - 2.0f * y / height) * fovScale;
 
+    Vector3 forward, right, up;
+    calculateCoordinateSystem(forward, right, up);
+
     if (type == CameraType::PINHOLE) {
         Vector3 origin = Vector3::fromArray(position);
-        Vector3 forward = (Vector3::fromArray(lookAt) - origin).normalize();
-        Vector3 right = forward.cross(Vector3::fromArray(upVector)).normalize();
-        Vector3 up = right.cross(forward).normalize();
+        
+        Vector3 forward, right, up;
+        calculateCoordinateSystem(forward, right, up);
         
         Vector3 direction = (forward + right * px + up * py).normalize();
         return Ray(origin, direction);
-    } else {  // THIN_LENS camera
+    } else if (type == CameraType::THIN_LENS) {
         // Calculate point on focal plane
-        Vector3 forward = (Vector3::fromArray(lookAt) - Vector3::fromArray(position)).normalize();
-        Vector3 right = forward.cross(Vector3::fromArray(upVector)).normalize();
-        Vector3 up = right.cross(forward).normalize();
-        
         Vector3 focalPoint = Vector3::fromArray(position) + 
                            (forward + right * px + up * py).normalize() * focalDistance;
         
@@ -85,7 +84,15 @@ Ray Camera::generateRay(float x, float y) const {
         
         // Create ray from lens point to focal point
         return Ray(lensPoint, (focalPoint - lensPoint).normalize());
+    } else {
+        throw std::invalid_argument("Invalid camera type");
     }
+}
+
+void Camera::calculateCoordinateSystem(Vector3& forward, Vector3& right, Vector3& up) const {
+    forward = (Vector3::fromArray(lookAt) - Vector3::fromArray(position)).normalize();
+    right = forward.cross(Vector3::fromArray(upVector)).normalize();
+    up = right.cross(forward).normalize();
 }
 
 Vector3 Camera::sampleLensPoint() const {
@@ -93,9 +100,8 @@ Vector3 Camera::sampleLensPoint() const {
     float r = std::sqrt(static_cast<float>(rand()) / RAND_MAX) * aperture;
     float theta = 2.0f * M_PI * static_cast<float>(rand()) / RAND_MAX;
     
-    Vector3 forward = (Vector3::fromArray(lookAt) - Vector3::fromArray(position)).normalize();
-    Vector3 right = forward.cross(Vector3::fromArray(upVector)).normalize();
-    Vector3 up = right.cross(forward).normalize();
+    Vector3 forward, right, up;
+    calculateCoordinateSystem(forward, right, up);
     
     return Vector3::fromArray(position) + (right * std::cos(theta) + up * std::sin(theta)) * r;
 }

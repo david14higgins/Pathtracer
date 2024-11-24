@@ -1,6 +1,7 @@
 #include "AreaLight.h"
 #include <random>
 
+// Constructor
 AreaLight::AreaLight(const std::array<float, 3>& position, 
                      const std::array<float, 3>& intensity,
                      const std::array<float, 3>& u_axis,
@@ -9,8 +10,8 @@ AreaLight::AreaLight(const std::array<float, 3>& position,
       u_axis(Vector3::fromArray(u_axis)),
       v_axis(Vector3::fromArray(v_axis)) {}
 
+// Get a random point on the area light
 Vector3 AreaLight::getRandomPoint() const {
-    // Generate random values between -0.5 and 0.5
     static std::random_device rd;
     static std::mt19937 gen(rd());
     static std::uniform_real_distribution<float> dis(-0.5f, 0.5f);
@@ -22,6 +23,7 @@ Vector3 AreaLight::getRandomPoint() const {
     return basePos + u_axis * u + v_axis * v;
 }
 
+// Get multiple sample points on the area light
 std::vector<Vector3> AreaLight::getSamplePoints(int samples) const {
     std::vector<Vector3> points;
     points.reserve(samples);

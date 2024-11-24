@@ -355,17 +355,56 @@ Color Renderer::tracePath(const Ray& ray, int depth) {
     }
 
     // Calculate direct lighting
+    // Color directLight(0, 0, 0);
+    // for (const auto& light : scene.getLightSources()) { 
+    //     // Create a shadow ray 
+    //     Vector3 lightPos = Vector3::fromArray(light->getPosition());
+    //     Vector3 lightDir = (lightPos - intersectionPoint).normalize();
+    //     float lightDistance = (lightPos - intersectionPoint).length();
+    //     Ray shadowRay(intersectionPoint + lightDir * 1e-4f, lightDir);
+    //     if (!isInShadow(shadowRay, lightDistance)) {    
+    //         float lightCosTheta = std::max(0.0f, normal.dot(lightDir));
+    //         float attenuation = 1.0f / (lightDistance * lightDistance);
+    //         directLight = directLight + Color::fromFloatArray(light->getIntensity()) * lightCosTheta * attenuation * 2.0f;
+    //     }
+    // }
+
     Color directLight(0, 0, 0);
-    for (const auto& light : scene.getLightSources()) { 
-        // Create a shadow ray 
-        Vector3 lightPos = Vector3::fromArray(light->getPosition());
-        Vector3 lightDir = (lightPos - intersectionPoint).normalize();
-        float lightDistance = (lightPos - intersectionPoint).length();
-        Ray shadowRay(intersectionPoint + lightDir * 1e-4f, lightDir);
-        if (!isInShadow(shadowRay, lightDistance)) {    
-            float lightCosTheta = std::max(0.0f, normal.dot(lightDir));
-            float attenuation = 1.0f / (lightDistance * lightDistance);
-            directLight = directLight + Color::fromFloatArray(light->getIntensity()) * lightCosTheta * attenuation * 2.0f;
+    for (const auto& light : scene.getLightSources()) {
+        if (auto areaLight = dynamic_cast<const AreaLight*>(light.get())) {
+            // Get multiple sample points on the area light
+            int shadowSamples = 16; // Number of samples for soft shadows
+            auto lightPoints = areaLight->getSamplePoints(shadowSamples);
+            
+            Color accumulatedLight(0, 0, 0);
+            for (const auto& lightPoint : lightPoints) {
+                Vector3 lightDir = (lightPoint - intersectionPoint).normalize();
+                float lightDistance = (lightPoint - intersectionPoint).length();
+                Ray shadowRay(intersectionPoint + lightDir * 1e-4f, lightDir);
+                
+                if (!isInShadow(shadowRay, lightDistance)) {
+                    float lightCosTheta = std::max(0.0f, normal.dot(lightDir));
+                    float attenuation = 1.0f / (1.0f + lightDistance * lightDistance);
+                    accumulatedLight = accumulatedLight + 
+                        Color::fromFloatArray(light->getIntensity()) * lightCosTheta * attenuation;
+                }
+            }
+            
+            // Average the contributions from all samples
+            directLight = directLight + accumulatedLight * (1.0f / shadowSamples) * 8.0f;
+        } else {
+            // Handle point lights as before
+            Vector3 lightPos = Vector3::fromArray(light->getPosition());
+            Vector3 lightDir = (lightPos - intersectionPoint).normalize();
+            float lightDistance = (lightPos - intersectionPoint).length();
+            Ray shadowRay(intersectionPoint + lightDir * 1e-4f, lightDir);
+                
+            if (!isInShadow(shadowRay, lightDistance)) {
+                float lightCosTheta = std::max(0.0f, normal.dot(lightDir));
+                float attenuation = 1.0f / (lightDistance * lightDistance);
+                directLight = directLight + 
+                    Color::fromFloatArray(light->getIntensity()) * lightCosTheta * attenuation;
+            }
         }
     }
 

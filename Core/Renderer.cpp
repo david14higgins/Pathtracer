@@ -221,13 +221,12 @@ Color Renderer::renderBlinnPhong(const Ray& ray, int currentBounce) {
                                    Color::fromFloatArray(light->getIntensity()) * attenuation;
                 }
             }
-
-                        // Average the contributions
+            // Average the contributions
             float scale = 1.0f / shadowSamples;
             diffuseColor = diffuseColor * scale;
             specularColor = specularColor * scale;
         } else {
-            // Handle point lights as before
+            // Handle point lights
             Vector3 lightPos = Vector3::fromArray(light->getPosition());
             Vector3 lightDir = (lightPos - intersectionPoint).normalize();
             Ray shadowRay(intersectionPoint + lightDir * 1e-4, lightDir);
@@ -354,21 +353,7 @@ Color Renderer::tracePath(const Ray& ray, int depth) {
         }
     }
 
-    // Calculate direct lighting
-    // Color directLight(0, 0, 0);
-    // for (const auto& light : scene.getLightSources()) { 
-    //     // Create a shadow ray 
-    //     Vector3 lightPos = Vector3::fromArray(light->getPosition());
-    //     Vector3 lightDir = (lightPos - intersectionPoint).normalize();
-    //     float lightDistance = (lightPos - intersectionPoint).length();
-    //     Ray shadowRay(intersectionPoint + lightDir * 1e-4f, lightDir);
-    //     if (!isInShadow(shadowRay, lightDistance)) {    
-    //         float lightCosTheta = std::max(0.0f, normal.dot(lightDir));
-    //         float attenuation = 1.0f / (lightDistance * lightDistance);
-    //         directLight = directLight + Color::fromFloatArray(light->getIntensity()) * lightCosTheta * attenuation * 2.0f;
-    //     }
-    // }
-
+    // Calculate direct lighting - soft shadows for area lights is faulty 
     Color directLight(0, 0, 0);
     for (const auto& light : scene.getLightSources()) {
         if (auto areaLight = dynamic_cast<const AreaLight*>(light.get())) {

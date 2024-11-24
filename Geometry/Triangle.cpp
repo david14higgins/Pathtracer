@@ -51,7 +51,7 @@ bool Triangle::intersect(const Ray& ray, float& t) const {
 }
 
 // Get the normal at a point
-Vector3 Triangle::getNormal(const Vector3& point) const {
+Vector3 Triangle::getNormal([[maybe_unused]] const Vector3& point) const {
     // Calculate two edges of the triangle
     Vector3 edge1 = v1 - v0;
     Vector3 edge2 = v2 - v0;

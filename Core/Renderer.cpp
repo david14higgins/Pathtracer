@@ -137,16 +137,16 @@ std::vector<std::vector<Color>> Renderer::renderScene() {
 Color Renderer::renderPixel(const Ray& ray, int currentBounce) {
     // Render based on the selected render mode
     if (rendermode == RenderMode::BINARY) {
-        return renderBinary(ray, currentBounce);
+        return renderBinary(ray);
     } else if (rendermode == RenderMode::PHONG) {
         return renderBlinnPhong(ray, currentBounce);
     } else if (rendermode == RenderMode::PATHTRACER) {
-        return renderPathTracer(ray, currentBounce);
+        return renderPathTracer(ray);
     }
     return Color(0, 0, 0);
 }
 
-Color Renderer::renderBinary(const Ray& ray, int currentBounce) {
+Color Renderer::renderBinary(const Ray& ray) {
     // We only care about if there is an intersection but initialise values so we can use findClosestIntersection
     float minDistance = std::numeric_limits<float>::infinity();
     std::shared_ptr<Shape> closestShape = nullptr;
@@ -296,7 +296,7 @@ Color Renderer::renderBlinnPhong(const Ray& ray, int currentBounce) {
     return pixelColor.clamp();
 }
 
-Color Renderer::renderPathTracer(const Ray& ray, int currentBounce) {
+Color Renderer::renderPathTracer(const Ray& ray) {
     // Accumulate colors as floats to avoid premature clamping
     float r = 0.0f, g = 0.0f, b = 0.0f;
     // Number of paths we trace per pixel

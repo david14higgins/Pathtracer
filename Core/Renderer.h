@@ -39,11 +39,11 @@ private:
     Color renderPixel(const Ray& ray, int currentBounce = 0);
 
     // Methods for different render modes
-    Color renderBinary(const Ray& ray, int currentBounce);
+    Color renderBinary(const Ray& ray);
 
     Color renderBlinnPhong(const Ray& ray, int currentBounce);
 
-    Color renderPathTracer(const Ray& ray, int currentBounce);
+    Color renderPathTracer(const Ray& ray);
     
     // Method to trace a path for a single pixel in path tracer
     Color tracePath(const Ray& ray, int depth = 0);

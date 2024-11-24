@@ -7,9 +7,8 @@
 
 class Light {
 public:
-    virtual ~Light() = default;
+    virtual ~Light() = default; // Destructor
 
-    // Pure virtual function to get the type of the light source
     virtual std::string toString() const = 0;
 
     // Pure virtual functions for position and intensity

@@ -14,12 +14,11 @@ public:
     const std::array<float, 3>& getPosition() const override;
     const std::array<float, 3>& getIntensity() const override;
 
-    // Override the toString() method to output the details of the PointLight
     std::string toString() const override;
 
 private:
-    std::array<float, 3> position;
-    std::array<float, 3> intensity;
+    std::array<float, 3> position; // Position of the point light
+    std::array<float, 3> intensity; // Intensity of the point light
 };
 
 #endif // POINTLIGHT_H

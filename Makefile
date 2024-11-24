@@ -8,12 +8,11 @@ CORE_DIR = Core
 GEOM_DIR = Geometry
 LIGHT_DIR = Lighting
 MAT_DIR = Materials
-UTIL_DIR = Utilities
 IO_DIR = IO
 
 # Source files and object files
 SRCS = $(wildcard $(SRC_DIR)/*.cpp $(CORE_DIR)/*.cpp $(GEOM_DIR)/*.cpp \
-               $(LIGHT_DIR)/*.cpp $(MAT_DIR)/*.cpp $(UTIL_DIR)/*.cpp $(IO_DIR)/*.cpp)
+               $(LIGHT_DIR)/*.cpp $(MAT_DIR)/*.cpp $(IO_DIR)/*.cpp)
 OBJS = $(SRCS:.cpp=.o)
 
 # Executable name
@@ -30,7 +29,7 @@ $(TARGET): $(OBJS)
 
 # Clean up object files, executable, and renders
 clean:
-	-del /Q /F src\main.o Core\*.o Geometry\*.o Lighting\*.o Materials\*.o Utilities\*.o IO\*.o raytracer.exe 2>NUL
+	-del /Q /F src\main.o Core\*.o Geometry\*.o Lighting\*.o Materials\*.o IO\*.o raytracer.exe 2>NUL
 	-rd /S /Q renders 2>NUL
 
 .PHONY: all clean
